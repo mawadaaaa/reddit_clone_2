@@ -1,66 +1,64 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from 'next/link';
+import PostCard from '@/components/PostCard';
+import CreatePostBar from '@/components/CreatePostBar';
+import RightSidebar from '@/components/RightSidebar';
+import dbConnect from '@/lib/db';
+import Post from '@/models/Post';
+import Community from '@/models/Community';
 
-export default function Home() {
+import User from '@/models/User';
+
+async function getFeed() {
+  await dbConnect();
+  // Temporarily removed populate to test basic fetching -> Restoring now
+  const posts = await Post.find({})
+    .populate('author', 'username')
+    .populate('community', 'name')
+    .sort({ createdAt: -1 })
+    .limit(20);
+
+  return JSON.parse(JSON.stringify(posts));
+}
+
+async function getTopCommunities() {
+  await dbConnect();
+  const communities = await Community.find({}).limit(5);
+  return JSON.parse(JSON.stringify(communities));
+}
+
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
+  const posts = await getFeed();
+  const communities = await getTopCommunities();
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="page-layout" style={{ marginTop: '20px' }}>
+      <div className="feed-column">
+        {/* Create Post Input Placeholder */}
+        <CreatePostBar />
+
+        {posts.length === 0 ? (
+          <div className="card">No posts yet. Join a community and start posting!</div>
+        ) : (
+          posts.map(post => (
+            <PostCard
+              key={post._id}
+              post={post}
+              communityName={post.community?.name}
             />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ))
+        )}
+      </div>
+
+      <div className="sidebar-column">
+        <RightSidebar communities={communities} />
+
+        {/* Sticky footer area often found in Reddit right rail */}
+        <div style={{ marginTop: '16px', fontSize: '12px', color: 'var(--color-text-dim)' }}>
+          <p>Reddit, Inc. © 2025. All rights reserved.</p>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

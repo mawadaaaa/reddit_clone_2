@@ -1,0 +1,35 @@
+.header {
+    background: white;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--color-border);
+    margin-top: -20px;
+    /* Offset main padding if needed */
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.description {
+    color: var(--color-text-dim);
+    margin-bottom: 16px;
+}
+
+.meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.memberCount {
+    font-weight: 500;
+    color: var(--color-text-dim);
+}

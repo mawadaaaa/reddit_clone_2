@@ -1,0 +1,125 @@
+.card {
+    display: flex;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.card:hover {
+    border-color: var(--color-text-dim);
+}
+
+.votes {
+    width: 40px;
+    background: #F8F9FA;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 4px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.voteBtn {
+    font-size: 24px;
+    color: var(--color-text-dim);
+    padding: 2px;
+    line-height: 1;
+    border-radius: 4px;
+}
+
+.voteBtn:hover {
+    background: rgba(215, 218, 220, 0.1);
+    color: #DC3545;
+}
+
+/* Specific Reddit Vote Colors */
+.upvote {
+    color: #FF4500 !important;
+}
+
+.downvote {
+    color: #7193FF !important;
+}
+
+.voteCount {
+    font-size: 12px;
+    font-weight: 700;
+    margin: 4px 0;
+    color: var(--color-text-main);
+}
+
+.content {
+    padding: 8px;
+    flex: 1;
+}
+
+.header {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--color-text-dim);
+}
+
+.subreddit {
+    font-weight: 700;
+    color: var(--color-text-main);
+}
+
+.subreddit:hover {
+    text-decoration: underline;
+}
+
+.meta {
+    color: var(--color-text-dim);
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--color-text-main);
+    line-height: 22px;
+}
+
+.titleLink {
+    text-decoration: none;
+    color: inherit;
+}
+
+.body {
+    font-size: 14px;
+    color: var(--color-text-main);
+    margin-bottom: 12px;
+    line-height: 21px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 2px;
+    color: var(--color-text-dim);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.action:hover {
+    background: rgba(215, 218, 220, 0.1);
+}

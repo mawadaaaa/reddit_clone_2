@@ -1,0 +1,89 @@
+.sidebar {
+    width: 312px;
+    display: block;
+}
+
+.widget {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.widgetHeader {
+    background-color: transparent;
+    /* Or maybe a slight header bg? Reddit usually simple. */
+    padding: 12px 12px 0 12px;
+    margin-bottom: 8px;
+}
+
+.widgetHeader h2 {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--color-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    border-bottom: 1px solid transparent;
+}
+
+.item:hover {
+    background-color: var(--color-hover);
+    /* Light gray hover */
+}
+
+/* Icon placeholder circular */
+.iconWrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #0079D3;
+    /* Default reddit blue placeholder */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+}
+
+.name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-main);
+    text-decoration: none;
+}
+
+.name:hover {
+    text-decoration: underline;
+}
+
+.members {
+    font-size: 12px;
+    color: var(--color-text-dim);
+}
+
+.footer {
+    padding: 12px 16px;
+}
+
+.seeMore {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-main);
+}
