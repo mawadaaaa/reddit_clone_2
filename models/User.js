@@ -20,6 +20,28 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    displayName: {
+        type: String,
+        maxlength: [30, 'Display Name cannot be more than 30 characters'],
+        default: '',
+    },
+    banner: {
+        type: String,
+        default: '',
+    },
+    about: {
+        type: String,
+        maxlength: [500, 'About cannot be more than 500 characters'],
+        default: '',
+    },
+    saved: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+    }],
+    hidden: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+    }],
     createdAt: {
         type: Date,
         default: Date.now,

@@ -77,18 +77,20 @@ async function seed() {
 
     // Create Posts
     const posts = [
-        { title: 'Next.js 14 is awesome!', content: 'I really love the new app router features. It makes routing so much easier once you get used to it.', community: c1._id, author: u1._id, upvotes: [u2._id, u3._id] },
-        { title: 'Why did the developer go broke?', content: 'Because he used up all his cache.', community: c2._id, author: u2._id, upvotes: [u1._id, u3._id, u2._id] },
-        { title: 'Global Tech Summit 2025 announced', content: 'The biggest tech conference is happening next month in San Francisco.', community: c3._id, author: u3._id, upvotes: [u1._id] },
-        { title: 'How to center a div?', content: 'I have been trying for 3 hours. Someone help. I tried flexbox but it is still slightly off. What am I doing wrong?', community: c1._id, author: u2._id, upvotes: [] },
-        { title: 'Look at this cat', content: 'Meow meow. Just a cute cat picture description since I cannot upload images yet.', community: c2._id, author: u1._id, upvotes: [u2._id] },
+        { title: 'Next.js 14 is awesome!', content: 'I really love the new app router features. It makes routing so much easier once you get used to it.', image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&auto=format&fit=crop&q=60', community: c1._id, author: u1._id, upvotes: [u2._id, u3._id] },
+        { title: 'Why did the developer go broke?', content: 'Because he used up all his cache.', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=60', community: c2._id, author: u2._id, upvotes: [u1._id, u3._id, u2._id] },
+        { title: 'Global Tech Summit 2025 announced', content: 'The biggest tech conference is happening next month in San Francisco.', image: 'https://images.unsplash.com/photo-1544531586-fde5298cdd40?w=800&auto=format&fit=crop&q=60', community: c3._id, author: u3._id, upvotes: [u1._id] },
+        { title: 'How to center a div?', content: 'I have been trying for 3 hours. Someone help. I tried flexbox but it is still slightly off. What am I doing wrong?', image: 'https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=800&auto=format&fit=crop&q=60', community: c1._id, author: u2._id, upvotes: [] },
+        // Added image to the cat post
+        { title: 'Look at this cat', content: 'Meow meow. Just a cute cat picture.', image: 'https://images.unsplash.com/photo-1529778873920-4da4926a7071?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3', community: c2._id, author: u1._id, upvotes: [u2._id] },
 
         // New Posts for "Full" feeling
-        { title: 'Understanding Async/Await in depth', content: 'Here is a deep dive into how promises work under the hood...', community: c1._id, author: u3._id, upvotes: [u1._id] },
-        { title: 'When the code works on the first try', content: 'Suspicious. Very suspicious.', community: c2._id, author: u3._id, upvotes: [u1._id, u2._id] },
-        { title: 'Market crash imminent?', content: 'Economists predict a downturn in the tech sector next quarter.', community: c3._id, author: u1._id, upvotes: [u2._id] },
-        { title: 'Best VS Code Extensions 2025', content: '1. Prettier\n2. ESLint\n3. GitLens\nWhat are your favorites?', community: c1._id, author: u1._id, upvotes: [u2._id, u3._id] },
-        { title: 'Breaking: Mars colony creates first internet node', content: 'Interplanetary internet is now officially a reality.', community: c3._id, author: u2._id, upvotes: [u1._id, u3._id] }
+        { title: 'Understanding Async/Await in depth', content: 'Here is a deep dive into how promises work under the hood...', image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60', community: c1._id, author: u3._id, upvotes: [u1._id] },
+        { title: 'When the code works on the first try', content: 'Suspicious. Very suspicious.', image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3', community: c2._id, author: u3._id, upvotes: [u1._id, u2._id] },
+        { title: 'Market crash imminent?', content: 'Economists predict a downturn in the tech sector next quarter.', image: 'https://images.unsplash.com/photo-1611974765270-ca12586343bb?w=800&auto=format&fit=crop&q=60', community: c3._id, author: u1._id, upvotes: [u2._id] },
+        { title: 'Best VS Code Extensions 2025', content: '1. Prettier\n2. ESLint\n3. GitLens\nWhat are your favorites?', image: 'https://images.unsplash.com/photo-1580927752452-89d86da3fa0a?w=800&auto=format&fit=crop&q=60', community: c1._id, author: u1._id, upvotes: [u2._id, u3._id] },
+        // Added video post
+        { title: 'Breaking: Mars colony creates first internet node', content: 'Interplanetary internet is now officially a reality.', video: 'https://www.w3schools.com/html/mov_bbb.mp4', community: c3._id, author: u2._id, upvotes: [u1._id, u3._id] }
     ];
 
     const createdPosts = await Post.create(posts);

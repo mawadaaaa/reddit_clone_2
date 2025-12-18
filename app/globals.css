@@ -1,20 +1,20 @@
 :root {
-  /* Light Mode Palette */
+  /* Dark Mode Palette (Reddit-like) */
   --color-primary: #FF4500;
-  --color-secondary: #0079D3;
-  --color-bg: #DAE0E6;
-  /* Main background */
-  --color-surface: #FFFFFF;
+  --color-secondary: #D7DADC;
+  --color-bg: #030303; 
+  /* Main background (very dark) */
+  --color-surface: #1A1A1B; 
   /* Card/Sidebar background */
-  --color-text-main: #1C1C1C;
+  --color-text-main: #D7DADC; 
   /* Main text */
-  --color-text-dim: #787C7E;
+  --color-text-dim: #818384; 
   /* Secondary text */
-  --color-border: #CCCCCC;
+  --color-border: #343536; 
   /* Borders */
-  --color-hover: #F6F7F8;
+  --color-hover: #272729; 
   /* Hover state */
-  --color-input: #F6F7F8;
+  --color-input: #272729; 
   /* Input background */
   --radius-md: 4px;
 }
@@ -158,4 +158,14 @@ button {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #bbb;
+}
+/* Utility for responsive visibility */
+.desktop-sidebar {
+    display: none;
+}
+
+@media (min-width: 960px) {
+    .desktop-sidebar {
+        display: block !important;
+    }
 }

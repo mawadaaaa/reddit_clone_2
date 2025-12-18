@@ -13,6 +13,9 @@ const PostSchema = new mongoose.Schema({
     image: {
         type: String, // Can be a URL or Base64 data URI
     },
+    video: {
+        type: String, // URL to video
+    },
     community: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Community',

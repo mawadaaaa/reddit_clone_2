@@ -1,5 +1,6 @@
 import dbConnect from '@/lib/db';
 import Post from '@/models/Post';
+import User from '@/models/User';
 import Comment from '@/models/Comment';
 import Community from '@/models/Community';
 import PostCard from '@/components/PostCard';

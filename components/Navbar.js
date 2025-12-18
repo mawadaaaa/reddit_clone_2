@@ -59,7 +59,17 @@ export default function Navbar() {
             <div className={styles.actions}>
                 {session ? (
                     <div className={styles.userMenu}>
-                        <span>{session.user.username}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <img
+                                src={`https://api.dicebear.com/7.x/identicon/svg?seed=${session.user.username}`}
+                                alt="avatar"
+                                style={{ width: 32, height: 32, borderRadius: '50%' }}
+                            />
+                            <span style={{ fontWeight: '500' }}>{session.user.username}</span>
+                        </div>
+                        <Link href={`/u/${session.user.username}`} className="btn btn-outline" style={{ textDecoration: 'none', border: 'none', color: 'var(--color-text-main)' }}>
+                            Profile
+                        </Link>
                         <button
                             onClick={() => signOut()}
                             className="btn btn-outline"

@@ -11,6 +11,7 @@ export default function SubmitPage({ params }) {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [image, setImage] = useState(''); // Stores URL or Base64
+    const [video, setVideo] = useState(''); // Stores Video URL
     const [uploading, setUploading] = useState(false);
     const [activeTab, setActiveTab] = useState('text'); // 'text' or 'image'
     const [error, setError] = useState('');
@@ -50,7 +51,8 @@ export default function SubmitPage({ params }) {
                 body: JSON.stringify({
                     title,
                     content: activeTab === 'image' ? (content || ' ') : content, // Allow empty content if image
-                    image: activeTab === 'image' ? image : ''
+                    image: activeTab === 'image' ? image : '',
+                    video: activeTab === 'image' ? video : ''
                 }),
             });
 
@@ -131,7 +133,7 @@ export default function SubmitPage({ params }) {
 
                     {activeTab === 'image' && (
                         <div style={{ border: '1px dashed #edeff1', padding: '20px', borderRadius: '4px', textAlign: 'center' }}>
-                            {!image ? (
+                            {!image && !video ? (
                                 <div>
                                     <label className="btn btn-outline" style={{ cursor: 'pointer', display: 'inline-block', marginBottom: '10px' }}>
                                         Upload Image
@@ -142,21 +144,36 @@ export default function SubmitPage({ params }) {
                                             style={{ display: 'none' }}
                                         />
                                     </label>
-                                    <p style={{ margin: '10px 0' }}>OR</p>
+                                    <p style={{ margin: '10px 0', fontWeight: 'bold' }}>OR</p>
                                     <input
                                         type="url"
                                         placeholder="Paste Image URL"
                                         className="input-field"
                                         onChange={(e) => setImage(e.target.value)}
+                                        style={{ width: '100%', marginBottom: '10px' }}
+                                    />
+                                    <p style={{ margin: '10px 0', fontWeight: 'bold' }}>OR</p>
+                                    <input
+                                        type="url"
+                                        placeholder="Paste Video URL (e.g., mp4 link)"
+                                        className="input-field"
+                                        onChange={(e) => setVideo(e.target.value)}
                                         style={{ width: '100%' }}
                                     />
                                 </div>
                             ) : (
                                 <div style={{ position: 'relative' }}>
-                                    <img src={image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '4px' }} />
+                                    {image && (
+                                        <img src={image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '4px' }} />
+                                    )}
+                                    {video && (
+                                        <video controls style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '4px' }}>
+                                            <source src={video} />
+                                        </video>
+                                    )}
                                     <button
                                         type="button"
-                                        onClick={() => setImage('')}
+                                        onClick={() => { setImage(''); setVideo(''); }}
                                         style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer' }}
                                     >
                                         ×

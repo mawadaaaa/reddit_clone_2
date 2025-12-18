@@ -15,7 +15,7 @@ export async function POST(req, { params }) {
 
         await dbConnect();
         const { name } = params;
-        const { title, content, image } = await req.json();
+        const { title, content, image, video } = await req.json();
 
         const community = await Community.findOne({ name });
         if (!community) {
@@ -26,6 +26,7 @@ export async function POST(req, { params }) {
             title,
             content,
             image,
+            video,
             community: community._id,
             author: session.user.id,
         });
