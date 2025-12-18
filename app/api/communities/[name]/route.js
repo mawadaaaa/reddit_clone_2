@@ -5,7 +5,7 @@ import Community from '@/models/Community';
 export async function GET(req, { params }) {
     try {
         await dbConnect();
-        const { name } = params;
+        const { name } = await params;
 
         const community = await Community.findOne({ name });
 

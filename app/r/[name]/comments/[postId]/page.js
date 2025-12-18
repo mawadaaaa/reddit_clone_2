@@ -10,8 +10,12 @@ import Link from 'next/link';
 
 async function getPost(id) {
     await dbConnect();
-    const post = await Post.findById(id).populate('author', 'username').populate('community', 'name');
+    const post = await Post.findById(id).populate('author', 'username').populate('community', 'name').lean();
     if (!post) return null;
+
+    const commentCount = await Comment.countDocuments({ post: post._id });
+    post.commentCount = commentCount;
+
     return JSON.parse(JSON.stringify(post));
 }
 

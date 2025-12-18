@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import dbConnect from '@/lib/db';
 import Community from '@/models/Community';
-import { handler as authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '../auth/[...nextauth]/route';
 
 export async function POST(req) {
     try {
@@ -13,7 +13,7 @@ export async function POST(req) {
         }
 
         await dbConnect();
-        const { name, description } = await req.json();
+        const { name, description, icon, banner } = await req.json();
 
         if (!name) {
             return NextResponse.json({ message: 'Community name is required' }, { status: 400 });
@@ -27,6 +27,8 @@ export async function POST(req) {
         const newCommunity = await Community.create({
             name,
             description,
+            icon,
+            banner,
             creator: session.user.id,
             members: [session.user.id], // Creator automatically joins
         });

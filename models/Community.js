@@ -21,6 +21,22 @@ const CommunitySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     }],
+    banner: {
+        type: String,
+        default: '',
+    },
+    icon: {
+        type: String,
+        default: '',
+    },
+    themeColor: {
+        type: String,
+        default: '#0079D3',
+    },
+    rules: [{
+        title: String,
+        description: String,
+    }],
     createdAt: {
         type: Date,
         default: Date.now,

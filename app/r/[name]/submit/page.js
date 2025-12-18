@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import styles from '@/app/login/Auth.module.css';
 import { FaImage, FaLink } from 'react-icons/fa';
 
 export default function SubmitPage({ params }) {
+    const { name } = use(params);
     const { data: session, status } = useSession();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -45,7 +46,7 @@ export default function SubmitPage({ params }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch(`/api/communities/${params.name}/posts`, {
+            const res = await fetch(`/api/communities/${name}/posts`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -61,7 +62,7 @@ export default function SubmitPage({ params }) {
                 return;
             }
 
-            router.push(`/r/${params.name}`);
+            router.push(`/r/${name}`);
             router.refresh();
         } catch (err) {
             setError('Something went wrong');
@@ -71,7 +72,7 @@ export default function SubmitPage({ params }) {
     return (
         <div className={styles.container}>
             <div className={styles.card} style={{ maxWidth: '700px' }}>
-                <h1 className={styles.title}>Create Post in r/{params.name}</h1>
+                <h1 className={styles.title}>Create Post in r/{name}</h1>
                 {error && <div className={styles.error}>{error}</div>}
 
                 {/* Tabs */}

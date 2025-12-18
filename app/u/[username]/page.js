@@ -19,8 +19,15 @@ async function getUserPosts(userId) {
     const posts = await Post.find({ author: userId })
         .populate('community', 'name')
         .populate('author', 'username')
-        .sort({ createdAt: -1 });
-    return JSON.parse(JSON.stringify(posts));
+        .sort({ createdAt: -1 })
+        .lean();
+
+    const postsWithCounts = await Promise.all(posts.map(async (post) => {
+        const commentCount = await Comment.countDocuments({ post: post._id });
+        return { ...post, commentCount };
+    }));
+
+    return JSON.parse(JSON.stringify(postsWithCounts));
 }
 
 async function getUserComments(userId) {
@@ -45,8 +52,16 @@ async function getUserSaved(userId) {
             { path: 'community', select: 'name' },
             { path: 'author', select: 'username' }
         ]
-    });
-    return user ? JSON.parse(JSON.stringify(user.saved)).reverse() : [];
+    }).lean();
+
+    if (!user || !user.saved) return [];
+
+    const savedPosts = await Promise.all(user.saved.map(async (post) => {
+        const commentCount = await Comment.countDocuments({ post: post._id });
+        return { ...post, commentCount };
+    }));
+
+    return JSON.parse(JSON.stringify(savedPosts)).reverse();
 }
 
 async function getUserHidden(userId) {
@@ -57,8 +72,16 @@ async function getUserHidden(userId) {
             { path: 'community', select: 'name' },
             { path: 'author', select: 'username' }
         ]
-    });
-    return user ? JSON.parse(JSON.stringify(user.hidden)).reverse() : [];
+    }).lean();
+
+    if (!user || !user.hidden) return [];
+
+    const hiddenPosts = await Promise.all(user.hidden.map(async (post) => {
+        const commentCount = await Comment.countDocuments({ post: post._id });
+        return { ...post, commentCount };
+    }));
+
+    return JSON.parse(JSON.stringify(hiddenPosts)).reverse();
 }
 
 async function getUserUpvoted(userId) {
@@ -66,8 +89,15 @@ async function getUserUpvoted(userId) {
     const posts = await Post.find({ upvotes: userId })
         .populate('community', 'name')
         .populate('author', 'username')
-        .sort({ createdAt: -1 });
-    return JSON.parse(JSON.stringify(posts));
+        .sort({ createdAt: -1 })
+        .lean();
+
+    const postsWithCounts = await Promise.all(posts.map(async (post) => {
+        const commentCount = await Comment.countDocuments({ post: post._id });
+        return { ...post, commentCount };
+    }));
+
+    return JSON.parse(JSON.stringify(postsWithCounts));
 }
 
 async function getUserDownvoted(userId) {
@@ -75,8 +105,15 @@ async function getUserDownvoted(userId) {
     const posts = await Post.find({ downvotes: userId })
         .populate('community', 'name')
         .populate('author', 'username')
-        .sort({ createdAt: -1 });
-    return JSON.parse(JSON.stringify(posts));
+        .sort({ createdAt: -1 })
+        .lean();
+
+    const postsWithCounts = await Promise.all(posts.map(async (post) => {
+        const commentCount = await Comment.countDocuments({ post: post._id });
+        return { ...post, commentCount };
+    }));
+
+    return JSON.parse(JSON.stringify(postsWithCounts));
 }
 
 export default async function ProfilePage({ params, searchParams }) {

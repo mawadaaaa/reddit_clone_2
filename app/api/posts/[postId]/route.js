@@ -6,6 +6,7 @@ import { authOptions } from '../../auth/[...nextauth]/route';
 
 export async function DELETE(req, { params }) {
   try {
+    const { postId } = await params;
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -15,7 +16,7 @@ export async function DELETE(req, { params }) {
 
     // Find post to ensure ownership
     // params.postId matches the folder name [postId]
-    const post = await Post.findById(params.postId).populate('author');
+    const post = await Post.findById(postId).populate('author');
     if (!post) {
       return NextResponse.json({ message: 'Post not found' }, { status: 404 });
     }
@@ -24,7 +25,7 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
-    await Post.findByIdAndDelete(params.postId);
+    await Post.findByIdAndDelete(postId);
 
     return NextResponse.json({ message: 'Post deleted' }, { status: 200 });
   } catch (error) {

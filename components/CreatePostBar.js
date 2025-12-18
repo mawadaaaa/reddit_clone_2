@@ -42,6 +42,7 @@ export default function CreatePostBar() {
                     style={{ marginBottom: 0, border: '1px solid var(--color-border)', flex: 1, cursor: 'text' }}
                     onClick={handleCreatePost}
                     readOnly // Prevent typing here, force navigation
+                    suppressHydrationWarning
                 />
             </div>
         </>

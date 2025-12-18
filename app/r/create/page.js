@@ -9,6 +9,8 @@ export default function CreateCommunityPage() {
     const { data: session, status } = useSession();
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+    const [icon, setIcon] = useState('');
+    const [banner, setBanner] = useState('');
     const [error, setError] = useState('');
     const router = useRouter();
     useEffect(() => {
@@ -26,7 +28,7 @@ export default function CreateCommunityPage() {
             const res = await fetch('/api/communities', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description }),
+                body: JSON.stringify({ name, description, icon, banner }),
             });
 
             const data = await res.json();
@@ -72,6 +74,28 @@ export default function CreateCommunityPage() {
                             onChange={(e) => setDescription(e.target.value)}
                             rows={4}
                             maxLength={500}
+                        />
+                    </div>
+
+                    <div className="input-group">
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>Icon URL (optional)</label>
+                        <input
+                            type="text"
+                            className="input-field"
+                            value={icon}
+                            onChange={(e) => setIcon(e.target.value)}
+                            placeholder="https://example.com/icon.png"
+                        />
+                    </div>
+
+                    <div className="input-group">
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>Banner URL (optional)</label>
+                        <input
+                            type="text"
+                            className="input-field"
+                            value={banner}
+                            onChange={(e) => setBanner(e.target.value)}
+                            placeholder="https://example.com/banner.png"
                         />
                     </div>
 

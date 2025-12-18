@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import dbConnect from '@/lib/db';
 import Community from '@/models/Community';
-import { handler as authOptions } from '../../auth/[...nextauth]/route';
+import { authOptions } from '../../../auth/[...nextauth]/route';
 
 export async function POST(req, { params }) {
     try {
+        const { name } = await params;
         const session = await getServerSession(authOptions);
 
         if (!session) {
@@ -13,7 +14,7 @@ export async function POST(req, { params }) {
         }
 
         await dbConnect();
-        const { name } = params;
+        // const { name } = params;
         const community = await Community.findOne({ name });
 
         if (!community) {

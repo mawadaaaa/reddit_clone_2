@@ -17,12 +17,22 @@ async function getCommunity(name) {
     return JSON.parse(JSON.stringify(community));
 }
 
+import Comment from '@/models/Comment'; // Add import
+
 async function getPosts(communityId) {
     await dbConnect();
     const posts = await Post.find({ community: communityId })
         .populate('author', 'username')
-        .sort({ createdAt: -1 });
-    return JSON.parse(JSON.stringify(posts));
+        .sort({ createdAt: -1 })
+        .lean();
+
+    // Aggregate comment counts manually since it's not in the Post schema
+    const postsWithCounts = await Promise.all(posts.map(async (post) => {
+        const commentCount = await Comment.countDocuments({ post: post._id });
+        return { ...post, commentCount };
+    }));
+
+    return JSON.parse(JSON.stringify(postsWithCounts));
 }
 
 export default async function CommunityPage({ params }) {

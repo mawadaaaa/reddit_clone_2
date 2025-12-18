@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRef, useState } from 'react';
-import { FaHome, FaChartLine, FaCompass, FaBook, FaReddit, FaBalanceScale, FaUniversalAccess, FaChevronDown, FaChevronUp, FaCog, FaStar, FaRegStar } from 'react-icons/fa';
+import { FaHome, FaChartLine, FaCompass, FaBook, FaReddit, FaBalanceScale, FaUniversalAccess, FaChevronDown, FaChevronUp, FaCog, FaStar, FaRegStar, FaPlus } from 'react-icons/fa';
 import styles from './LeftSidebar.module.css';
 import { useUI } from '@/context/UIContext';
 
@@ -80,6 +80,10 @@ export default function LeftSidebar() {
                         <Link href="/communities" className={styles.dropdownItem}>
                             <FaCog size={16} />
                             Manage Communities
+                        </Link>
+                        <Link href="/r/create" className={styles.dropdownItem}>
+                            <FaPlus size={16} />
+                            Create Community
                         </Link>
                         {communities.map((community, idx) => (
                             <Link key={idx} href={`/${community.name}`} className={styles.dropdownItem}>

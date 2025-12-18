@@ -134,6 +134,7 @@ export default function PostCard({ post, communityName, enableAI = false }) {
 
                     <div ref={menuRef}>
                         <button
+                            suppressHydrationWarning
                             onClick={(e) => { e.preventDefault(); setShowMenu(!showMenu); }}
                             style={{ background: 'transparent', border: 'none', color: 'var(--color-text-dim)', cursor: 'pointer', padding: '4px' }}
                         >
@@ -233,7 +234,7 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                     {/* Comments Pill */}
                     <Link href={`/r/${communityName || post.community?.name}/comments/${post._id}`} className={`${styles.pill} ${styles.actionPill}`}>
                         <FaCommentAlt className={styles.actionIcon} />
-                        <span>{post.comments?.length || 0}</span>
+                        <span>{post.commentCount !== undefined ? post.commentCount : (post.comments?.length || 0)}</span>
                     </Link>
 
                     {/* Share Pill */}

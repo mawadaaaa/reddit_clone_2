@@ -11,6 +11,8 @@ import RecentPosts from '@/components/RecentPosts';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
+import Comment from '@/models/Comment'; // Add import
+
 async function getFeed() {
   await dbConnect();
   // Temporarily removed populate to test basic fetching -> Restoring now
@@ -18,9 +20,15 @@ async function getFeed() {
     .populate('author', 'username')
     .populate('community', 'name')
     .sort({ createdAt: -1 })
-    .limit(20);
+    .limit(20)
+    .lean();
 
-  return JSON.parse(JSON.stringify(posts));
+  const postsWithCounts = await Promise.all(posts.map(async (post) => {
+    const commentCount = await Comment.countDocuments({ post: post._id });
+    return { ...post, commentCount };
+  }));
+
+  return JSON.parse(JSON.stringify(postsWithCounts));
 }
 
 async function getTopCommunities() {
@@ -35,11 +43,22 @@ async function getUserInteractions(userId) {
     path: 'recentInteractions.post',
     strictPopulate: false,
     populate: { path: 'community', select: 'name' }
-  });
+  }).lean();
 
   if (!user || !user.recentInteractions) return [];
 
-  return JSON.parse(JSON.stringify(user.recentInteractions));
+  const interactionsWithCounts = await Promise.all(user.recentInteractions.map(async (interaction) => {
+    if (interaction.post) {
+      const commentCount = await Comment.countDocuments({ post: interaction.post._id });
+      // We need to mutate the interaction object or return a new structure
+      // user.recentInteractions[i].post is an object now
+      const postWithCount = { ...interaction.post, commentCount };
+      return { ...interaction, post: postWithCount };
+    }
+    return interaction;
+  }));
+
+  return JSON.parse(JSON.stringify(interactionsWithCounts));
 }
 
 export const dynamic = 'force-dynamic';

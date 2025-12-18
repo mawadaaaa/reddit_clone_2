@@ -71,8 +71,9 @@ export default function CommentsSection({ postId, initialComments }) {
         }
     };
 
-    const CommentItem = ({ comment }) => (
-        <div className={styles.comment}>
+    // Render helper instead of inline component to avoid remounts
+    const renderComment = (comment) => (
+        <div key={comment._id} className={styles.comment}>
             <div className={styles.commentHeader}>
                 <span className={styles.author}>{comment.author?.username || 'deleted'}</span>
                 <span className={styles.date}>{new Date(comment.createdAt).toLocaleDateString()}</span>
@@ -111,9 +112,7 @@ export default function CommentsSection({ postId, initialComments }) {
 
             {comment.children.length > 0 && (
                 <div className={styles.replies}>
-                    {comment.children.map(child => (
-                        <CommentItem key={child._id} comment={child} />
-                    ))}
+                    {comment.children.map(child => renderComment(child))}
                 </div>
             )}
         </div>
@@ -152,9 +151,7 @@ export default function CommentsSection({ postId, initialComments }) {
             )}
 
             <div className={styles.list}>
-                {commentTree.map(comment => (
-                    <CommentItem key={comment._id} comment={comment} />
-                ))}
+                {commentTree.map(comment => renderComment(comment))}
             </div>
         </div>
     );
