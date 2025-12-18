@@ -4,7 +4,7 @@ import dbConnect from '@/lib/db';
 import Post from '@/models/Post';
 import Community from '@/models/Community';
 import User from '@/models/User';
-import { handler as authOptions } from '../../../auth/[...nextauth]/route';
+import { authOptions } from '../../../auth/[...nextauth]/route';
 
 export async function POST(req, { params }) {
     try {
@@ -29,6 +29,16 @@ export async function POST(req, { params }) {
             video,
             community: community._id,
             author: session.user.id,
+        });
+
+        await User.findByIdAndUpdate(session.user.id, {
+            $push: {
+                recentInteractions: {
+                    $each: [{ post: newPost._id, interactedAt: new Date(), type: 'create' }],
+                    $position: 0,
+                    $slice: 10 // Keep only last 10 interactions
+                }
+            }
         });
 
         return NextResponse.json(newPost, { status: 201 });

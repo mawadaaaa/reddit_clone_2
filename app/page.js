@@ -7,6 +7,9 @@ import Post from '@/models/Post';
 import Community from '@/models/Community';
 
 import User from '@/models/User';
+import RecentPosts from '@/components/RecentPosts';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 async function getFeed() {
   await dbConnect();
@@ -26,11 +29,35 @@ async function getTopCommunities() {
   return JSON.parse(JSON.stringify(communities));
 }
 
+async function getUserInteractions(userId) {
+  await dbConnect();
+  const user = await User.findById(userId).populate({
+    path: 'recentInteractions.post',
+    strictPopulate: false,
+    populate: { path: 'community', select: 'name' }
+  });
+
+  if (!user || !user.recentInteractions) return [];
+
+  return JSON.parse(JSON.stringify(user.recentInteractions));
+}
+
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const posts = await getFeed();
   const communities = await getTopCommunities();
+  const session = await getServerSession(authOptions);
+
+  let recentPosts = [];
+  if (session) {
+    recentPosts = await getUserInteractions(session.user.id);
+  }
+
+  // Fallback/Mock for frontend dev: If no history, show feed posts
+  if (recentPosts.length === 0 && posts.length > 0) {
+    recentPosts = posts.slice(0, 5).map(post => ({ post }));
+  }
 
   return (
     <div className="page-layout" style={{ marginTop: '20px' }}>
@@ -52,7 +79,11 @@ export default async function Home() {
       </div>
 
       <div className="sidebar-column">
-        <RightSidebar communities={communities} />
+        {session && recentPosts.length > 0 ? (
+          <RecentPosts posts={recentPosts} />
+        ) : (
+          <RightSidebar communities={communities} />
+        )}
 
         {/* Sticky footer area often found in Reddit right rail */}
         <div style={{ marginTop: '16px', fontSize: '12px', color: 'var(--color-text-dim)' }}>

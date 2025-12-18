@@ -132,42 +132,44 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                         </span>
                     </div>
 
-                    {isOwner && (
-                        <div ref={menuRef}>
-                            <button
-                                onClick={(e) => { e.preventDefault(); setShowMenu(!showMenu); }}
-                                style={{ background: 'transparent', border: 'none', color: 'var(--color-text-dim)', cursor: 'pointer', padding: '4px' }}
-                            >
-                                <FaEllipsisH />
-                            </button>
-                            {showMenu && (
-                                <div style={{
-                                    position: 'absolute',
-                                    right: 0,
-                                    top: '100%',
-                                    background: '#1A1A1B', // Dark background like screenshot
-                                    border: '1px solid #343536',
-                                    borderRadius: '4px',
-                                    zIndex: 10,
-                                    minWidth: '200px',
-                                    boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
-                                }}>
-                                    <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); alert('Edit clicked'); setShowMenu(false); }}>
-                                        <FaEdit style={{ marginRight: '10px' }} /> Edit post body
-                                    </button>
-                                    <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); alert('Save clicked'); setShowMenu(false); }}>
-                                        <FaBookmark style={{ marginRight: '10px' }} /> Save
-                                    </button>
-                                    <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); alert('Hide clicked'); setShowMenu(false); }}>
-                                        <FaEyeSlash style={{ marginRight: '10px' }} /> Hide
-                                    </button>
-                                    <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); handleDelete(); }} style={{ color: '#FF4500' }}>
-                                        <FaTrash style={{ marginRight: '10px' }} /> Delete
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    <div ref={menuRef}>
+                        <button
+                            onClick={(e) => { e.preventDefault(); setShowMenu(!showMenu); }}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--color-text-dim)', cursor: 'pointer', padding: '4px' }}
+                        >
+                            <FaEllipsisH />
+                        </button>
+                        {showMenu && (
+                            <div style={{
+                                position: 'absolute',
+                                right: 0,
+                                top: '100%',
+                                background: '#1A1A1B', // Dark background like screenshot
+                                border: '1px solid #343536',
+                                borderRadius: '4px',
+                                zIndex: 10,
+                                minWidth: '200px',
+                                boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+                            }}>
+                                {isOwner && (
+                                    <>
+                                        <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); alert('Edit clicked'); setShowMenu(false); }}>
+                                            <FaEdit style={{ marginRight: '10px' }} /> Edit post body
+                                        </button>
+                                        <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); handleDelete(); }} style={{ color: '#FF4500' }}>
+                                            <FaTrash style={{ marginRight: '10px' }} /> Delete
+                                        </button>
+                                    </>
+                                )}
+                                <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); alert('Save clicked'); setShowMenu(false); }}>
+                                    <FaBookmark style={{ marginRight: '10px' }} /> Save
+                                </button>
+                                <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); alert('Hide clicked'); setShowMenu(false); }}>
+                                    <FaEyeSlash style={{ marginRight: '10px' }} /> Hide
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Title */}

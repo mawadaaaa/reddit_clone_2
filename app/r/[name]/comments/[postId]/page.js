@@ -29,6 +29,9 @@ async function getTopCommunities() {
     return JSON.parse(JSON.stringify(communities));
 }
 
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+
 export default async function SinglePostPage({ params }) {
     const resolvedParams = await params;
     const post = await getPost(resolvedParams.postId);
@@ -39,6 +42,25 @@ export default async function SinglePostPage({ params }) {
                 <div className="card">Post not found</div>
             </div>
         );
+    }
+
+    const session = await getServerSession(authOptions);
+    if (session) {
+        await dbConnect();
+        // Remove previous interaction for this post if exists, then add new one
+        await User.findByIdAndUpdate(session.user.id, {
+            $pull: { recentInteractions: { post: post._id } }
+        });
+
+        await User.findByIdAndUpdate(session.user.id, {
+            $push: {
+                recentInteractions: {
+                    $each: [{ post: post._id, interactedAt: new Date(), type: 'view' }],
+                    $position: 0,
+                    $slice: 10
+                }
+            }
+        });
     }
 
     const comments = await getComments(resolvedParams.postId);

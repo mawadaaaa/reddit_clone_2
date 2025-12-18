@@ -42,6 +42,21 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post'
     }],
+    recentInteractions: [{
+        post: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Post'
+        },
+        interactedAt: {
+            type: Date,
+            default: Date.now
+        },
+        type: {
+            type: String,
+            enum: ['view', 'create'],
+            default: 'view'
+        }
+    }],
     createdAt: {
         type: Date,
         default: Date.now,
