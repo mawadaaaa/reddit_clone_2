@@ -19,7 +19,7 @@ export default function CreatePostBar() {
             // For now, let's link to a popular one or the first one they follow?
             // Or maybe just /r/general/submit if that community exists, or just /r/news/submit?
             // Let's try to find a generic route or just pick one.
-            router.push('/r/news/submit');
+            router.push('/submit');
         }
     };
 

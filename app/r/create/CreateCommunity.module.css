@@ -1,0 +1,156 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  min-height: calc(100vh - 48px);
+  display: flex;
+  justify-content: center;
+}
+
+.contentWrapper {
+  width: 100%;
+  max-width: 600px;
+}
+
+.header {
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.pageTitle {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--color-text-main);
+}
+
+.subTitle {
+  font-size: 14px;
+  color: var(--color-text-dim);
+  margin-top: 4px;
+}
+
+.card {
+  background-color: var(--color-surface);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  padding: 16px;
+}
+
+.inputGroup {
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-text-main);
+}
+
+.helperText {
+  font-size: 12px;
+  color: var(--color-text-dim);
+  margin-bottom: 8px;
+  line-height: 16px;
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-input, #1A1A1B);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0 12px;
+}
+
+.inputPrefix {
+  color: var(--color-text-dim);
+  font-size: 14px;
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.inputField {
+  flex: 1;
+  padding: 10px 0;
+  background-color: transparent;
+  border: none;
+  color: var(--color-text-main);
+  font-size: 14px;
+  outline: none;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: var(--color-input, #1A1A1B);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-main);
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  min-height: 80px;
+}
+
+.inputField:focus,
+.inputRow:focus-within,
+.textarea:focus {
+  border-color: var(--color-text-main);
+}
+
+.error {
+  color: #ff0000;
+  background-color: rgba(255, 0, 0, 0.1);
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 32px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.cancelBtn {
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-main);
+}
+
+.cancelBtn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.submitBtn {
+  background-color: #D7DADC;
+  /* Disabled look initially or white */
+  color: #1A1A1B;
+}
+
+.submitBtn.active {
+  background-color: var(--color-text-main);
+  /* White */
+  color: var(--color-surface);
+  /* Black */
+}
+
+.submitBtn:hover {
+  opacity: 0.9;
+}

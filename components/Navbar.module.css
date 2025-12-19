@@ -67,3 +67,146 @@
     font-size: 14px;
     color: var(--color-text-main);
 }
+
+.profileButton {
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #FFFFFF;
+}
+
+.profileButton:hover,
+.profileButton.active {
+    border-color: var(--color-border);
+    background-color: var(--color-surface-hover);
+}
+
+.dropdownWrapper {
+    position: relative;
+}
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 250px;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    z-index: 1001;
+    animation: fadeIn 0.1s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdownHeader {
+    padding: 16px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.userName {
+    font-weight: 600;
+    font-size: 14px;
+    color: #FFFFFF;
+}
+
+.userHandle {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+.dropdownList {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+}
+
+.dropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-main);
+    text-decoration: none;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    transition: background-color 0.2s;
+}
+
+.dropdownItem:hover {
+    background-color: var(--color-surface-hover);
+}
+
+.dropdownIcon {
+    font-size: 20px;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+}
+
+.createButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 99px;
+    /* Rounded pill shape */
+    text-decoration: none;
+    color: var(--color-text-main);
+    font-weight: 500;
+    font-size: 14px;
+    transition: background-color 0.2s;
+    border: 1px solid transparent;
+}
+
+.createButton:hover {
+    background-color: var(--color-surface-hover);
+    border-color: var(--color-border);
+}
+
+.iconButton {
+    background: transparent;
+    border: none;
+    color: var(--color-text-main);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 18px;
+}
+
+.iconButton:hover {
+    background-color: var(--color-surface-hover);
+}

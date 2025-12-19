@@ -31,6 +31,15 @@ async function seedUser() {
                 image: '',
             });
             console.log('Created user: admin / password123');
+
+            // Adding funny_cat as requested by user
+            await User.create({
+                username: 'funny_cat',
+                email: 'funny_cat@example.com',
+                password: hashedPassword,
+                image: '',
+            });
+            console.log('Created user: funny_cat / password123');
         }
         process.exit(0);
     } catch (e) {
