@@ -57,6 +57,14 @@ const UserSchema = new mongoose.Schema({
             default: 'view'
         }
     }],
+    customFeeds: [{
+        name: { type: String, required: true },
+        communities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Community' }]
+    }],
+    favoriteCommunities: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Community'
+    }],
     createdAt: {
         type: Date,
         default: Date.now,

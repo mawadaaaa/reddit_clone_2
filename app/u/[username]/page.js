@@ -6,6 +6,7 @@ import Post from '@/models/Post';
 import Comment from '@/models/Comment';
 import Community from '@/models/Community'; // Import Community explicitly
 import PostCard from '@/components/PostCard';
+import ProfileManager from '@/components/ProfileManager';
 
 async function getUser(username) {
     await dbConnect();
@@ -116,10 +117,16 @@ async function getUserDownvoted(userId) {
     return JSON.parse(JSON.stringify(postsWithCounts));
 }
 
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+
 export default async function ProfilePage({ params, searchParams }) {
     const { username } = await params;
     const { view } = await searchParams; // Get view param
     const currentView = view || 'overview'; // Default to overview
+
+    const session = await getServerSession(authOptions);
+    const isOwner = session?.user?.name === username;
 
     const user = await getUser(username);
 
@@ -216,6 +223,9 @@ export default async function ProfilePage({ params, searchParams }) {
                         <Link href={`/u/${username}?view=hidden`} style={getTabStyle('hidden')}>Hidden</Link>
                         <Link href={`/u/${username}?view=upvoted`} style={getTabStyle('upvoted')}>Upvoted</Link>
                         <Link href={`/u/${username}?view=downvoted`} style={getTabStyle('downvoted')}>Downvoted</Link>
+                        {isOwner && (
+                            <Link href={`/u/${username}?view=manage`} style={getTabStyle('manage')}>Manage</Link>
+                        )}
                     </div>
 
                     {/* Create Post Input Bar */}
@@ -259,7 +269,9 @@ export default async function ProfilePage({ params, searchParams }) {
                         </div>
                     )}
 
-                    {currentView === 'comments' ? (
+                    {currentView === 'manage' && isOwner ? (
+                        <ProfileManager user={user} isOwnProfile={isOwner} />
+                    ) : currentView === 'comments' ? (
                         <div>
                             {comments.length === 0 ? (
                                 <div className="card">No comments yet.</div>

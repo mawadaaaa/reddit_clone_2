@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { FaBell, FaRegBell, FaEllipsisH, FaPlus, FaStar, FaVolumeMute } from 'react-icons/fa';
 import styles from './CommunityHeader.module.css';
+import AddToFeedModal from './AddToFeedModal';
 
 export default function CommunityHeader({ community }) {
     const { data: session } = useSession();
@@ -13,6 +15,31 @@ export default function CommunityHeader({ community }) {
     const isMember = session && community.members.includes(session.user.id);
     const [joined, setJoined] = useState(isMember);
     const [loading, setLoading] = useState(false);
+
+    // UI State
+    const [bellOpen, setBellOpen] = useState(false);
+    const [dotsOpen, setDotsOpen] = useState(false);
+    const [isFeedModalOpen, setIsFeedModalOpen] = useState(false);
+    const [notificationLevel, setNotificationLevel] = useState('low'); // 'off', 'low', 'all'
+
+    const bellRef = useRef(null);
+    const dotsRef = useRef(null);
+
+    // Close menus on click outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (bellRef.current && !bellRef.current.contains(event.target)) {
+                setBellOpen(false);
+            }
+            if (dotsRef.current && !dotsRef.current.contains(event.target)) {
+                setDotsOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     const handleJoin = async () => {
         if (!session) {
@@ -36,6 +63,28 @@ export default function CommunityHeader({ community }) {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleFavorite = async () => {
+        if (!session) return router.push('/?login=true');
+
+        try {
+            await fetch('/api/user/favorites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ communityName: community.name })
+            });
+            alert('Favorites updated!'); // Simple feedback for now
+            setDotsOpen(false);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleAddToCustomFeed = () => {
+        if (!session) return router.push('/?login=true');
+        setDotsOpen(false);
+        setIsFeedModalOpen(true);
     };
 
     // Use schema themeColor or fallback
@@ -77,11 +126,30 @@ export default function CommunityHeader({ community }) {
                             <Link href={`/r/${community.name}/submit`}>
                                 <button className="btn btn-outline" style={{ borderRadius: '999px', fontWeight: 'bold' }}>Create Post</button>
                             </Link>
-                            <button className={styles.iconBtn}>
-                                <svg fill="currentColor" height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path>
-                                </svg>
-                            </button>
+
+                            {/* Bell Button */}
+                            <div style={{ position: 'relative' }} ref={bellRef}>
+                                <button
+                                    className={`${styles.iconBtn} ${bellOpen ? styles.active : ''}`}
+                                    onClick={() => setBellOpen(!bellOpen)}
+                                >
+                                    {notificationLevel === 'off' ? <FaRegBell /> : <FaBell />}
+                                </button>
+                                {bellOpen && (
+                                    <div className={styles.dropdown}>
+                                        <button className={styles.dropdownItem} onClick={() => { setNotificationLevel('off'); setBellOpen(false); }}>
+                                            <FaRegBell /> Off
+                                        </button>
+                                        <button className={styles.dropdownItem} onClick={() => { setNotificationLevel('low'); setBellOpen(false); }}>
+                                            <FaBell /> Low
+                                        </button>
+                                        <button className={styles.dropdownItem} onClick={() => { setNotificationLevel('all'); setBellOpen(false); }}>
+                                            <FaBell style={{ color: 'var(--color-primary)' }} /> All
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
                             <button
                                 onClick={handleJoin}
                                 disabled={loading}
@@ -89,15 +157,39 @@ export default function CommunityHeader({ community }) {
                             >
                                 {loading ? '...' : (joined ? 'Joined' : 'Join')}
                             </button>
-                            <button className={styles.iconBtn}>
-                                <svg fill="currentColor" height="16" viewBox="0 0 20 20" width="16" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path>
-                                </svg>
-                            </button>
+
+                            {/* Three Dots Button */}
+                            <div style={{ position: 'relative' }} ref={dotsRef}>
+                                <button
+                                    className={`${styles.iconBtn} ${dotsOpen ? styles.active : ''}`}
+                                    onClick={() => setDotsOpen(!dotsOpen)}
+                                >
+                                    <FaEllipsisH />
+                                </button>
+                                {dotsOpen && (
+                                    <div className={styles.dropdown}>
+                                        <button className={styles.dropdownItem} onClick={handleAddToCustomFeed}>
+                                            <FaPlus /> Add to custom feed
+                                        </button>
+                                        <button className={styles.dropdownItem} onClick={handleFavorite}>
+                                            <FaStar /> Add to favorites
+                                        </button>
+                                        <button className={styles.dropdownItem} onClick={() => setDotsOpen(false)}>
+                                            <FaVolumeMute /> Mute r/{community.name}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <AddToFeedModal
+                isOpen={isFeedModalOpen}
+                onClose={() => setIsFeedModalOpen(false)}
+                communityName={community.name}
+            />
         </div>
     );
 }

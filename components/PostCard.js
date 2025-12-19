@@ -83,20 +83,64 @@ export default function PostCard({ post, communityName, enableAI = false }) {
         }
     };
 
+    const [isSaved, setIsSaved] = useState(false);
+
+    useEffect(() => {
+        const checkSaveStatus = async () => {
+            if (session?.user) {
+                try {
+                    const res = await fetch(`/api/posts/${post._id}/save`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setIsSaved(data.saved);
+                    }
+                } catch (error) {
+                    console.error('Failed to check save status');
+                }
+            }
+        };
+        checkSaveStatus();
+    }, [post._id, session]);
+
+    const handleSave = async () => {
+        if (!session) {
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        const previousState = isSaved;
+        setIsSaved(!isSaved); // Optimistic
+
+        try {
+            const res = await fetch(`/api/posts/${post._id}/save`, {
+                method: 'POST',
+            });
+
+            if (!res.ok) {
+                setIsSaved(previousState);
+                alert('Failed to save post');
+            } else {
+                const data = await res.json();
+                setIsSaved(!data.saved); // API returns 'saved' as boolean of (unsaved -> false, saved -> true)? No...
+                // API returns { saved: boolean } representing the NEW state
+                setIsSaved(data.saved);
+            }
+        } catch (error) {
+            setIsSaved(previousState);
+            console.error(error);
+        }
+    };
+
     const handleDelete = async () => {
-        // if (!confirm('Are you sure you want to delete this post?')) return;
+        if (!confirm('Are you sure you want to delete this post?')) return;
 
-        // Disable delete for now
-        alert('Delete functionality is currently disabled.');
-
-        /*
         try {
             const res = await fetch(`/api/posts/${post._id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
                 // Refresh page or remove from UI
-                window.location.reload(); 
+                window.location.reload();
             } else {
                 alert('Failed to delete post');
             }
@@ -104,7 +148,6 @@ export default function PostCard({ post, communityName, enableAI = false }) {
             console.error(error);
             alert('Error deleting post');
         }
-        */
     };
 
     const isOwner = session?.user?.name === post.author?.username;
@@ -162,8 +205,8 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                                         </button>
                                     </>
                                 )}
-                                <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); alert('Save clicked'); setShowMenu(false); }}>
-                                    <FaBookmark style={{ marginRight: '10px' }} /> Save
+                                <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); handleSave(); setShowMenu(false); }}>
+                                    <FaBookmark style={{ marginRight: '10px', color: isSaved ? '#4fbcff' : 'inherit' }} /> {isSaved ? 'Unsave' : 'Save'}
                                 </button>
                                 <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); alert('Hide clicked'); setShowMenu(false); }}>
                                     <FaEyeSlash style={{ marginRight: '10px' }} /> Hide
@@ -186,8 +229,8 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                 {/* Media Rendering */}
                 {post.video ? (
                     <div className={styles.mediaContainer}>
-                        <video controls className={styles.mediaVideo}>
-                            <source src={post.video} type="video/mp4" />
+                        <video controls className={styles.mediaVideo} suppressHydrationWarning>
+                            <source src={post.video} type="video/mp4" suppressHydrationWarning />
                             Your browser does not support the video tag.
                         </video>
                     </div>
@@ -213,6 +256,7 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                     {/* Vote Pill */}
                     <div className={`${styles.pill} ${styles.votePill}`}>
                         <button
+                            suppressHydrationWarning
                             className={`${styles.voteBtn} ${userVote === 'up' ? styles.upvote : ''}`}
                             onClick={(e) => { e.preventDefault(); handleVote('up'); }}
                             title="Upvote"
@@ -223,6 +267,7 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                             {score}
                         </span>
                         <button
+                            suppressHydrationWarning
                             className={`${styles.voteBtn} ${userVote === 'down' ? styles.downvote : ''}`}
                             onClick={(e) => { e.preventDefault(); handleVote('down'); }}
                             title="Downvote"
@@ -238,7 +283,7 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                     </Link>
 
                     {/* Share Pill */}
-                    <button className={`${styles.pill} ${styles.actionPill}`}>
+                    <button className={`${styles.pill} ${styles.actionPill}`} suppressHydrationWarning onClick={(e) => { e.preventDefault(); alert('Share clicked'); }}>
                         <svg className={styles.actionIcon} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2L12 22M12 2L2 12M12 2L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                         </svg>
@@ -246,12 +291,17 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                     </button>
 
                     {/* Save Pill */}
-                    <button className={`${styles.pill} ${styles.actionPill}`}>
-                        <svg className={styles.actionIcon} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                            <polyline points="7 3 7 8 15 8"></polyline>
-                        </svg>
+                    <button className={`${styles.pill} ${styles.actionPill}`} suppressHydrationWarning onClick={(e) => { e.preventDefault(); handleSave(); }}>
+                        {isSaved ? (
+                            <FaBookmark className={styles.actionIcon} style={{ color: '#4fbcff' }} />
+                        ) : (
+                            <svg className={styles.actionIcon} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                        )}
+                        <span>{isSaved ? 'Unsave' : 'Save'}</span>
                     </button>
                 </div>
             </div>

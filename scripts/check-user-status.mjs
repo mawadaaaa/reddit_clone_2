@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 
-// Hardcoded from known .env.local value
-const MONGODB_URI = 'mongodb://127.0.0.1:27017/reddit_clone_2';
+// Use environment variable or fallback to local
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/reddit_clone_2';
 
 async function checkUsers() {
     try {

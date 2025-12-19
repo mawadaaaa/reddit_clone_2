@@ -52,7 +52,7 @@ export default function Navbar() {
         <nav className={styles.navbar}>
             <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <button onClick={toggleSidebar} style={{ color: 'var(--color-text-main)', fontSize: '20px', display: 'flex' }}>
+                <button onClick={toggleSidebar} style={{ color: 'var(--color-text-main)', fontSize: '20px', display: 'flex' }} suppressHydrationWarning>
                     <FaBars />
                 </button>
                 <Link href="/" className={styles.logo}>
