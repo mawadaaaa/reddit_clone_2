@@ -49,9 +49,8 @@ async function seed() {
                 creator: user._id,
                 members: [user._id],
                 themeColor: '#0079D3',
-                // Using placeholder images or generic colors if no external URL
-                banner: '',
-                icon: '',
+                banner: 'https://images.unsplash.com/photo-1548018566-85dc02580dfc?auto=format&fit=crop&w=1200&q=80',
+                icon: 'https://api.dicebear.com/7.x/identicon/svg?seed=AlexandriaEgy',
                 rules: [
                     { title: 'No doxxing', description: 'Do not share personal information' },
                     { title: 'No brigading', description: 'Do not incite harassment' },
@@ -65,6 +64,8 @@ async function seed() {
                 creator: user._id,
                 members: [user._id],
                 themeColor: '#000000',
+                icon: 'https://assets.vercel.com/image/upload/v1607554385/repositories/next-js/next-js-bg.png',
+                banner: 'https://assets.vercel.com/image/upload/v1538361091/repositories/next-js/next-js-bg.png',
             },
             {
                 name: 'javascript',
