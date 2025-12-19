@@ -6,6 +6,7 @@ import CommunitySidebar from '@/components/CommunitySidebar';
 
 // ... imports
 import Post from '@/models/Post';
+import User from '@/models/User';
 import PostCard from '@/components/PostCard';
 import Link from 'next/link';
 

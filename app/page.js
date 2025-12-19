@@ -13,10 +13,16 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 import Comment from '@/models/Comment'; // Add import
 
-async function getFeed() {
+async function getFeed(userId = null) {
   await dbConnect();
+
+  const query = {};
+  if (userId) {
+    query.author = { $ne: userId };
+  }
+
   // Temporarily removed populate to test basic fetching -> Restoring now
-  const posts = await Post.find({})
+  const posts = await Post.find(query)
     .populate('author', 'username')
     .populate('community', 'name')
     .sort({ createdAt: -1 })
@@ -64,9 +70,9 @@ async function getUserInteractions(userId) {
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const posts = await getFeed();
-  const communities = await getTopCommunities();
   const session = await getServerSession(authOptions);
+  const posts = await getFeed(session?.user?.id);
+  const communities = await getTopCommunities();
 
   let recentPosts = [];
   if (session) {

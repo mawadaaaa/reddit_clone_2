@@ -13,46 +13,49 @@ export async function POST(req, { params }) {
         }
 
         await dbConnect();
-        // const { postId } = params;
-        const { type } = await req.json(); // 'up' or 'down'
 
-        const post = await Post.findById(postId);
-        if (!post) {
-            return NextResponse.json({ message: 'Post not found' }, { status: 404 });
-        }
+        const { type } = await req.json(); // 'up' or 'down'
 
         const userId = session.user.id;
 
-        // Remove existing votes
-        let upvotes = post.upvotes.map(id => id.toString());
-        let downvotes = post.downvotes.map(id => id.toString());
+        const post = await Post.findById(postId);
+        if (!post) return NextResponse.json({ message: 'Post not found' }, { status: 404 });
 
-        const isUpvoted = upvotes.includes(userId);
-        const isDownvoted = downvotes.includes(userId);
+        // Check if IDs exist in arrays (converting to strings for comparison safe-check)
+        const isUpvoted = post.upvotes && post.upvotes.map(id => id.toString()).includes(userId);
+        const isDownvoted = post.downvotes && post.downvotes.map(id => id.toString()).includes(userId);
 
-        // Reset logic
-        if (isUpvoted) {
-            upvotes = upvotes.filter(id => id !== userId);
-        }
-        if (isDownvoted) {
-            downvotes = downvotes.filter(id => id !== userId);
-        }
-
-        // Apply new vote
         if (type === 'up') {
-            if (!isUpvoted) upvotes.push(userId);
+            if (isUpvoted) {
+                // Remove upvote
+                await Post.findByIdAndUpdate(postId, { $pull: { upvotes: userId } });
+            } else {
+                // Add upvote, remove downvote
+                await Post.findByIdAndUpdate(postId, {
+                    $addToSet: { upvotes: userId },
+                    $pull: { downvotes: userId }
+                });
+            }
         } else if (type === 'down') {
-            if (!isDownvoted) downvotes.push(userId);
+            if (isDownvoted) {
+                // Remove downvote
+                await Post.findByIdAndUpdate(postId, { $pull: { downvotes: userId } });
+            } else {
+                // Add downvote, remove upvote
+                await Post.findByIdAndUpdate(postId, {
+                    $addToSet: { downvotes: userId },
+                    $pull: { upvotes: userId }
+                });
+            }
         }
 
-        post.upvotes = upvotes;
-        post.downvotes = downvotes;
-        await post.save();
+        // Fetch updated post
+        const updatedPost = await Post.findById(postId);
 
         return NextResponse.json({
-            upvotes: post.upvotes,
-            downvotes: post.downvotes,
-            score: post.upvotes.length - post.downvotes.length
+            upvotes: updatedPost.upvotes,
+            downvotes: updatedPost.downvotes,
+            score: updatedPost.upvotes.length - updatedPost.downvotes.length
         }, { status: 200 });
     } catch (error) {
         console.error(error);

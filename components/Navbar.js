@@ -11,13 +11,36 @@ import AuthModal from './AuthModal';
 
 export default function Navbar() {
     const { data: session } = useSession();
+    console.log('Navbar Session:', session?.user); // DEBUG
     const router = useRouter();
     const searchParams = useSearchParams();
     const { toggleSidebar } = useUI();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [query, setQuery] = useState('');
+    const [searchResults, setSearchResults] = useState({ users: [], communities: [] });
+    const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const searchRef = useRef(null);
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (query.length >= 1) {
+                fetch(`/api/search?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        setSearchResults(data);
+                        setIsSearchDropdownOpen(true);
+                    });
+            } else {
+                setSearchResults({ users: [], communities: [] });
+                setIsSearchDropdownOpen(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [query]);
 
     useEffect(() => {
         if (searchParams.get('login') === 'true') {
@@ -28,11 +51,14 @@ export default function Navbar() {
         }
     }, [searchParams]);
 
-    // Handle click outside to close dropdown
+    // Handle click outside to close dropdowns
     useEffect(() => {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsDropdownOpen(false);
+            }
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setIsSearchDropdownOpen(false);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -45,6 +71,7 @@ export default function Navbar() {
         e.preventDefault();
         if (query.trim()) {
             router.push(`/search?q=${encodeURIComponent(query)}`);
+            setIsSearchDropdownOpen(false);
         }
     };
 
@@ -63,15 +90,93 @@ export default function Navbar() {
                 </Link>
             </div>
 
-            <form className={styles.search} onSubmit={handleSearch}>
-                <input
-                    type="text"
-                    placeholder="Search Reddit"
-                    className={styles.searchInput}
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                />
-            </form>
+            <div className={styles.searchWrapper} ref={searchRef}>
+                <form className={styles.search} onSubmit={handleSearch}>
+                    <div className={styles.searchIconWrapper}>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fillRule="evenodd" clipRule="evenodd" d="M14.1108 12.9231C15.2891 11.4727 16 9.62312 16 7.60002C16 2.96083 12.2386 -0.799976 7.60002 -0.799976C2.96083 -0.799976 -0.799976 2.96083 -0.799976 7.60002C -0.799976 12.2386 2.96083 16 7.60002 16C9.62312 16 11.4727 15.2891 12.9231 14.1108L17.4061 18.5937C17.7341 18.9213 18.2655 18.9213 18.5937 18.5937C18.9213 18.2655 18.9213 17.7341 18.5937 17.4061L14.1108 12.9231ZM7.60002 14.32C3.88874 14.32 0.880024 11.3113 0.880024 7.60002C0.880024 3.88874 3.88874 0.880024 7.60002 0.880024C11.3113 0.880024 14.32 3.88874 14.32 7.60002C14.32 11.3113 11.3113 14.32 7.60002 14.32Z" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Search Reddit"
+                        className={styles.searchInput}
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        onFocus={() => {
+                            if (query.length >= 1) setIsSearchDropdownOpen(true);
+                        }}
+                    />
+                    {query && (
+                        <button
+                            type="button"
+                            className={styles.clearButton}
+                            onClick={() => {
+                                setQuery('');
+                                setIsSearchDropdownOpen(false);
+                                setSearchResults({ users: [], communities: [] });
+                            }}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fillRule="evenodd" clipRule="evenodd" d="M10 0C4.47715 0 0 4.47715 0 10C0 15.5228 4.47715 20 10 20C15.5228 20 20 15.5228 20 10C20 4.47715 15.5228 0 10 0ZM13.5355 6.46447C13.7308 6.2692 14.0474 6.2692 14.2426 6.46447C14.4379 6.65973 14.4379 6.97631 14.2426 7.17157L10.7071 10.7071L14.2426 14.2426C14.4379 14.4379 14.4379 14.7545 14.2426 14.9497C14.0474 15.145 13.7308 15.145 13.5355 14.9497L10 11.4142L6.46447 14.9497C6.2692 15.145 5.95262 15.145 5.75736 14.9497C5.5621 14.7545 5.5621 14.4379 5.75736 14.2426L9.29289 10.7071L5.75736 7.17157C5.5621 6.97631 5.5621 6.65973 5.75736 6.46447C5.95262 6.2692 6.2692 6.2692 6.46447 6.46447L10 10L13.5355 6.46447Z" fill="currentColor" />
+                            </svg>
+                        </button>
+                    )}
+                </form>
+                {isSearchDropdownOpen && (searchResults.users.length > 0 || searchResults.communities.length > 0) && (
+                    <div className={styles.searchDropdown}>
+                        {searchResults.communities.length > 0 && (
+                            <div className={styles.searchSection}>
+                                <div className={styles.searchSectionTitle}>Communities</div>
+                                {searchResults.communities.map((community) => (
+                                    <Link
+                                        key={community._id}
+                                        href={`/r/${community.name}`}
+                                        className={styles.searchResultItem}
+                                        onClick={() => setIsSearchDropdownOpen(false)}
+                                    >
+                                        <div className={styles.resultIcon}>
+                                            <FaReddit />
+                                        </div>
+                                        <div className={styles.resultInfo}>
+                                            <span className={styles.resultName}>r/{community.name}</span>
+                                            <span className={styles.resultMeta}>{community.members?.length || 0} members</span>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                        {searchResults.users.length > 0 && (
+                            <div className={styles.searchSection}>
+                                <div className={styles.searchSectionTitle}>People</div>
+                                {searchResults.users.map((user) => (
+                                    <Link
+                                        key={user._id}
+                                        href={`/u/${user.username}`}
+                                        className={styles.searchResultItem}
+                                        onClick={() => setIsSearchDropdownOpen(false)}
+                                    >
+                                        <div className={styles.resultIcon}>
+                                            {user.image ? (
+                                                <img
+                                                    src={user.image}
+                                                    alt=""
+                                                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                                                />
+                                            ) : (
+                                                <FaUser />
+                                            )}
+                                        </div>
+                                        <div className={styles.resultInfo}>
+                                            <span className={styles.resultName}>u/{user.username}</span>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
 
             <div className={styles.actions}>
                 {session ? (
@@ -91,9 +196,9 @@ export default function Navbar() {
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             >
                                 <img
-                                    src={`https://api.dicebear.com/7.x/identicon/svg?seed=${session.user.username}`}
+                                    src={session.user.image || `https://api.dicebear.com/7.x/identicon/svg?seed=${session.user.username}`}
                                     alt="avatar"
-                                    style={{ width: 32, height: 32, borderRadius: '50%' }}
+                                    style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1 }}>
                                     <span style={{ fontWeight: '500', fontSize: '13px' }}>{session.user.username}</span>

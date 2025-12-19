@@ -123,9 +123,11 @@ export default function CommunityHeader({ community }) {
                         </div>
 
                         <div className={styles.actions}>
-                            <Link href={`/r/${community.name}/submit`}>
-                                <button className="btn btn-outline" style={{ borderRadius: '999px', fontWeight: 'bold' }}>Create Post</button>
-                            </Link>
+                            {joined && (
+                                <Link href={`/submit?community=${community.name}`}>
+                                    <button className="btn btn-outline" style={{ borderRadius: '999px', fontWeight: 'bold' }}>Create Post</button>
+                                </Link>
+                            )}
 
                             {/* Bell Button */}
                             <div style={{ position: 'relative' }} ref={bellRef}>

@@ -138,7 +138,19 @@ export default async function ProfilePage({ params, searchParams }) {
     let comments = [];
 
     // Data fetching router
-    if (currentView === 'overview' || currentView === 'posts') {
+    let overviewItems = [];
+
+    if (currentView === 'overview') {
+        const [fetchedPosts, fetchedComments] = await Promise.all([
+            getUserPosts(user._id),
+            getUserComments(user._id)
+        ]);
+
+        const typedPosts = fetchedPosts.map(p => ({ ...p, type: 'post' }));
+        const typedComments = fetchedComments.map(c => ({ ...c, type: 'comment' }));
+
+        overviewItems = [...typedPosts, ...typedComments].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (currentView === 'posts') {
         posts = await getUserPosts(user._id);
     } else if (currentView === 'comments') {
         comments = await getUserComments(user._id);
@@ -218,18 +230,20 @@ export default async function ProfilePage({ params, searchParams }) {
                         <Link href={`/u/${username}`} style={getTabStyle('overview')}>Overview</Link>
                         <Link href={`/u/${username}?view=posts`} style={getTabStyle('posts')}>Posts</Link>
                         <Link href={`/u/${username}?view=comments`} style={getTabStyle('comments')}>Comments</Link>
-                        <Link href={`/u/${username}?view=saved`} style={getTabStyle('saved')}>Saved</Link>
-                        <Link href={`/u/${username}?view=history`} style={getTabStyle('history')}>History</Link>
-                        <Link href={`/u/${username}?view=hidden`} style={getTabStyle('hidden')}>Hidden</Link>
-                        <Link href={`/u/${username}?view=upvoted`} style={getTabStyle('upvoted')}>Upvoted</Link>
-                        <Link href={`/u/${username}?view=downvoted`} style={getTabStyle('downvoted')}>Downvoted</Link>
                         {isOwner && (
-                            <Link href={`/u/${username}?view=manage`} style={getTabStyle('manage')}>Manage</Link>
+                            <>
+                                <Link href={`/u/${username}?view=saved`} style={getTabStyle('saved')}>Saved</Link>
+                                <Link href={`/u/${username}?view=history`} style={getTabStyle('history')}>History</Link>
+                                <Link href={`/u/${username}?view=hidden`} style={getTabStyle('hidden')}>Hidden</Link>
+                                <Link href={`/u/${username}?view=upvoted`} style={getTabStyle('upvoted')}>Upvoted</Link>
+                                <Link href={`/u/${username}?view=downvoted`} style={getTabStyle('downvoted')}>Downvoted</Link>
+                                <Link href={`/u/${username}?view=manage`} style={getTabStyle('manage')}>Manage</Link>
+                            </>
                         )}
                     </div>
 
                     {/* Create Post Input Bar */}
-                    {(currentView === 'overview' || currentView === 'posts') && (
+                    {(currentView === 'overview' || currentView === 'posts') && isOwner && (
                         <div className="card" style={{ display: 'flex', alignItems: 'center', padding: '8px', marginBottom: '16px' }}>
                             <div style={{
                                 width: '38px',
@@ -288,8 +302,31 @@ export default async function ProfilePage({ params, searchParams }) {
                                 ))
                             )}
                         </div>
+                    ) : currentView === 'overview' ? (
+                        <div>
+                            {overviewItems.length === 0 ? (
+                                <div className="card">This user hasn't posted or commented anything yet.</div>
+                            ) : (
+                                overviewItems.map(item => {
+                                    if (item.type === 'post') {
+                                        return <PostCard key={item._id} post={item} communityName={item.community?.name} />;
+                                    } else {
+                                        return (
+                                            <div key={item._id} className="card" style={{ padding: '10px', fontSize: '14px' }}>
+                                                <div style={{ marginBottom: '8px', color: 'var(--color-text-dim)', fontSize: '12px' }}>
+                                                    <Link href={`/u/${item.author.username}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>{item.author.username}</Link> commented on <Link href={`/r/${item.post?.community?.name || 'unknown'}/comments/${item.post?._id}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>{item.post?.title || 'deleted post'}</Link> • <Link href={`/r/${item.post?.community?.name || 'unknown'}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>r/{item.post?.community?.name || 'unknown'}</Link>
+                                                </div>
+                                                <div style={{ padding: '8px', background: 'var(--color-bg)', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                                                    {item.content}
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                })
+                            )}
+                        </div>
                     ) : (
-                        // Default to Posts view (Overview/Posts/Saved/etc)
+                        // Default to Posts logic (Posts/Saved/Hidden/etc)
                         <div>
                             {posts.length === 0 ? (
                                 <div className="card">
@@ -342,9 +379,11 @@ export default async function ProfilePage({ params, searchParams }) {
                             <p style={{ fontSize: '12px', color: 'var(--color-text-dim)' }}>u/{user.username}</p>
                         </div>
 
-                        <button className="btn btn-primary" style={{ width: '100%', borderRadius: '999px', background: 'linear-gradient(90deg, #EC0623 0%, #FF8717 100%)', border: 'none' }}>
-                            Create Avatar
-                        </button>
+                        {isOwner && (
+                            <button className="btn btn-primary" style={{ width: '100%', borderRadius: '999px', background: 'linear-gradient(90deg, #EC0623 0%, #FF8717 100%)', border: 'none' }}>
+                                Create Avatar
+                            </button>
+                        )}
 
                         <div style={{ padding: '16px 0', borderBottom: '1px solid var(--color-border)' }}>
                             <div style={{ fontSize: '14px', marginBottom: '12px' }}>
@@ -367,11 +406,13 @@ export default async function ProfilePage({ params, searchParams }) {
 
 
 
-                        <div style={{ marginTop: '24px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
-                            <Link href="/settings" className="btn btn-outline" style={{ width: '100%', borderRadius: '999px' }}>
-                                Profile Settings
-                            </Link>
-                        </div>
+                        {isOwner && (
+                            <div style={{ marginTop: '24px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+                                <Link href="/settings" className="btn btn-outline" style={{ width: '100%', borderRadius: '999px' }}>
+                                    Profile Settings
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

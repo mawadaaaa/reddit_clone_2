@@ -42,10 +42,18 @@ export const authOptions = {
         signIn: '/login',
     },
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.id = user.id;
                 token.username = user.name;
+                token.image = user.image;
+            }
+            // Allow updating the token if session update is triggered
+            if (trigger === "update") {
+                console.log('JWT UPDATE TRIGGERED'); // DEBUG
+                console.log('Session Update Data:', session); // DEBUG
+                if (session?.username) token.username = session.username;
+                if (session?.image) token.image = session.image;
             }
             return token;
         },
@@ -53,6 +61,7 @@ export const authOptions = {
             if (token) {
                 session.user.id = token.id;
                 session.user.username = token.username;
+                session.user.image = token.image;
             }
             return session;
         },

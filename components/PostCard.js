@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FaArrowUp, FaArrowDown, FaCommentAlt, FaEllipsisH, FaEdit, FaBookmark, FaEyeSlash, FaTrash } from 'react-icons/fa';
+import { FaArrowUp, FaArrowDown, FaCommentAlt, FaEllipsisH, FaEdit, FaBookmark, FaEyeSlash, FaTrash, FaLink, FaExternalLinkAlt } from 'react-icons/fa';
 import AISummary from './AISummary';
 import styles from './PostCard.module.css';
 import AuthModal from './AuthModal';
@@ -9,12 +9,18 @@ import { useSession } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { useVote } from '@/context/VoteContext';
+
 export default function PostCard({ post, communityName, enableAI = false }) {
     const { data: session } = useSession();
     const router = useRouter();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const menuRef = useRef(null);
+
+    // Context for global vote state (solving stale back-navigation)
+    const { getVote, registerVote } = useVote();
+    const globalVote = getVote(post._id);
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -30,13 +36,48 @@ export default function PostCard({ post, communityName, enableAI = false }) {
     }, []);
 
     // Initial state from props
+    // We default to props, but if global state exists (fresh navigation), we might update in effect
     const [score, setScore] = useState((post.upvotes?.length || 0) - (post.downvotes?.length || 0));
     const [userVote, setUserVote] = useState(() => {
         if (!session) return null;
-        if (post.upvotes?.includes(session.user.id)) return 'up';
-        if (post.downvotes?.includes(session.user.id)) return 'down';
+
+        console.log('PostCard vote check:', {
+            postId: post._id,
+            userId: session.user.id,
+            upvotes: post.upvotes,
+            hasUpvoted: post.upvotes?.includes(session.user.id),
+            hasUpvotedLoose: post.upvotes?.some(id => id.toString() === session.user.id)
+        });
+
+        // Use more robust check
+        if (post.upvotes?.some(id => id.toString() === session.user.id)) return 'up';
+        if (post.downvotes?.some(id => id.toString() === session.user.id)) return 'down';
         return null;
     });
+
+    // 1. Sync GLOBAL state -> LOCAL state
+    // If we have a global record (e.g. came back from single post view), use it.
+    useEffect(() => {
+        if (globalVote) {
+            setScore(globalVote.score);
+            setUserVote(globalVote.userVote);
+        }
+    }, [globalVote]);
+
+    // 2. Sync PROPS -> LOCAL state (only if no global state overrides, e.g. first load)
+    useEffect(() => {
+        // Only reset from props if we DON'T have a global override active
+        // Or if the session just loaded and global state is empty
+        if (session?.user?.id && !globalVote) {
+            let vote = null;
+            if (post.upvotes?.some(id => id.toString() === session.user.id)) vote = 'up';
+            else if (post.downvotes?.some(id => id.toString() === session.user.id)) vote = 'down';
+
+            setUserVote(vote);
+            // Note: We don't reset score from props here to avoid jumping if global state had it different? 
+            // Actually props are usually static until refresh.
+        }
+    }, [session, post.upvotes, post.downvotes, globalVote]);
 
     const handleVote = async (type) => {
         if (!session) {
@@ -61,6 +102,9 @@ export default function PostCard({ post, communityName, enableAI = false }) {
         setScore(newScore);
         setUserVote(newVote);
 
+        // Update GLOBAL state immediately
+        registerVote(post._id, newVote, newScore);
+
         try {
             const res = await fetch(`/api/posts/${post._id}/vote`, {
                 method: 'POST',
@@ -72,14 +116,18 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                 // Revert on error
                 setScore(previousScore);
                 setUserVote(previousVote);
+                registerVote(post._id, previousVote, previousScore);
             } else {
                 const data = await res.json();
                 // Sync with server source of truth
                 setScore(data.score);
+                // Update global again with confirmed server data
+                registerVote(post._id, newVote, data.score);
             }
         } catch (error) {
             setScore(previousScore);
             setUserVote(previousVote);
+            registerVote(post._id, previousVote, previousScore);
         }
     };
 
@@ -150,6 +198,52 @@ export default function PostCard({ post, communityName, enableAI = false }) {
         }
     };
 
+    const [isHidden, setIsHidden] = useState(false);
+
+    useEffect(() => {
+        const checkHideStatus = async () => {
+            if (session?.user) {
+                try {
+                    const res = await fetch(`/api/posts/${post._id}/hide`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setIsHidden(data.hidden);
+                    }
+                } catch (error) {
+                    console.error('Failed to check hide status');
+                }
+            }
+        };
+        checkHideStatus();
+    }, [post._id, session]);
+
+    const handleHide = async () => {
+        if (!session) {
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        const previousState = isHidden;
+        setIsHidden(!isHidden);
+
+        try {
+            const res = await fetch(`/api/posts/${post._id}/hide`, {
+                method: 'POST',
+            });
+
+            if (!res.ok) {
+                setIsHidden(previousState);
+                alert('Failed to hide post');
+            } else {
+                const data = await res.json();
+                setIsHidden(data.hidden);
+            }
+        } catch (error) {
+            setIsHidden(previousState);
+            console.error(error);
+        }
+    };
+
     const isOwner = session?.user?.name === post.author?.username;
 
     return (
@@ -208,8 +302,8 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                                 <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); handleSave(); setShowMenu(false); }}>
                                     <FaBookmark style={{ marginRight: '10px', color: isSaved ? '#4fbcff' : 'inherit' }} /> {isSaved ? 'Unsave' : 'Save'}
                                 </button>
-                                <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); alert('Hide clicked'); setShowMenu(false); }}>
-                                    <FaEyeSlash style={{ marginRight: '10px' }} /> Hide
+                                <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); handleHide(); setShowMenu(false); }}>
+                                    <FaEyeSlash style={{ marginRight: '10px' }} /> {isHidden ? 'Unhide' : 'Hide'}
                                 </button>
                             </div>
                         )}
@@ -241,6 +335,35 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                             alt={post.title}
                             className={styles.mediaImage}
                         />
+                    </div>
+                ) : post.link ? (
+                    <div className={styles.mediaContainer}>
+                        <a
+                            href={post.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '10px 16px',
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: '4px',
+                                textDecoration: 'none',
+                                color: 'var(--color-text-main)'
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+                                <div style={{ background: 'var(--color-border)', padding: '8px', borderRadius: '4px', display: 'flex' }}>
+                                    <FaLink />
+                                </div>
+                                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '14px' }}>
+                                    {post.link.length > 50 ? post.link.substring(0, 50) + '...' : post.link}
+                                </span>
+                            </div>
+                            <FaExternalLinkAlt style={{ fontSize: '12px', color: 'var(--color-text-dim)' }} />
+                        </a>
                     </div>
                 ) : null}
 
@@ -305,6 +428,6 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

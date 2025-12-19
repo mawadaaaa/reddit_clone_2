@@ -20,9 +20,11 @@ export default function AuthModal({ isOpen, onClose }) {
             if (login.length < 3) return 'Username/Email must be at least 3 characters';
             if (password.length < 6) return 'Password must be at least 6 characters';
         } else {
-            if (username.length < 3 || username.length > 20) return 'Username must be 3-20 characters';
+            if (username.length < 4 || username.length > 20) return 'Username must be 4-20 characters';
+            if (!/^[a-zA-Z]/.test(username)) return 'Username must start with a letter';
             if (!email.includes('@')) return 'Invalid email address';
             if (password.length < 6) return 'Password must be at least 6 characters';
+            if (!/(?=.*[a-zA-Z])(?=.*[0-9])/.test(password)) return 'Password must contain both letters and numbers';
         }
         return null;
     };

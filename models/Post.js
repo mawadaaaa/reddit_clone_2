@@ -16,6 +16,9 @@ const PostSchema = new mongoose.Schema({
     video: {
         type: String, // URL to video
     },
+    link: {
+        type: String, // External link
+    },
     community: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Community',

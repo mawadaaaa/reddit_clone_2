@@ -17,9 +17,20 @@ export default function LeftSidebar() {
     // State for dynamic data
     const [favorites, setFavorites] = useState([]);
     const [customFeeds, setCustomFeeds] = useState([]);
+    const [communities, setCommunities] = useState([]); // Add communities state
 
     // Fetch user data
     useEffect(() => {
+        // Fetch all communities
+        fetch('/api/communities')
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    setCommunities(data);
+                }
+            })
+            .catch(err => console.error('Failed to fetch communities', err));
+
         if (session) {
             fetch('/api/user/favorites').then(res => res.json()).then(data => {
                 if (Array.isArray(data)) setFavorites(data);
@@ -29,22 +40,6 @@ export default function LeftSidebar() {
             });
         }
     }, [session]);
-
-    const communities = [
-        { name: 'r/CallOfDuty', icon: null },
-        { name: 'r/DaniDev', icon: null },
-        { name: 'r/Minecraft', icon: null },
-        { name: 'r/Warzone', icon: null },
-        { name: 'r/AlexandriaEgy', icon: null },
-        { name: 'r/Amd', icon: null },
-        { name: 'r/anime', icon: null },
-        { name: 'r/announcements', icon: null },
-        { name: 'r/apexlegends', icon: null },
-        { name: 'r/ArcRaiders', icon: null },
-        { name: 'r/assassinscreed', icon: null },
-        { name: 'r/AskReddit', icon: null },
-        { name: 'r/no', icon: null },
-    ];
 
     // Helper to check if a community is favorited
     const isFavorited = (communityName) => {
@@ -197,16 +192,17 @@ export default function LeftSidebar() {
                             Create Community
                         </Link>
                         {communities.map((community, idx) => {
-                            const isFav = isFavorited(community.name);
+                            const cleanName = community.name.replace(/^r\//, '');
+                            const isFav = isFavorited(cleanName);
                             return (
-                                <Link key={idx} href={`/${community.name.replace('r/', 'r/')}`} className={styles.dropdownItem}>
+                                <Link key={idx} href={`/r/${cleanName}`} className={styles.dropdownItem}>
                                     <div className={styles.communityIconWrapper}>
                                         {/* Placeholder for community icon */}
                                         {community.icon ? <img src={community.icon} alt="" /> : <FaReddit size={20} />}
                                     </div>
-                                    <span className={styles.communityName}>{community.name}</span>
+                                    <span className={styles.communityName}>r/{cleanName}</span>
                                     <div
-                                        onClick={(e) => toggleFavorite(e, community.name)}
+                                        onClick={(e) => toggleFavorite(e, cleanName)}
                                         className={styles.starIconContainer}
                                         style={{ marginLeft: 'auto', padding: '4px', cursor: 'pointer', display: 'flex' }}
                                     >

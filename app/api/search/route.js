@@ -13,7 +13,7 @@ export async function GET(req) {
             return NextResponse.json({ users: [], communities: [] });
         }
 
-        const regex = new RegExp(query, 'i');
+        const regex = new RegExp('^' + query, 'i');
 
         const users = await User.find({ username: regex }).select('username image').limit(5);
         const communities = await Community.find({ name: regex }).select('name description members').limit(5);

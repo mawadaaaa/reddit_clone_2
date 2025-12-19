@@ -1,8 +1,14 @@
+'use client';
+
 import { FaBirthdayCake, FaUserFriends, FaCircle } from 'react-icons/fa';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import styles from './CommunitySidebar.module.css';
 
 export default function CommunitySidebar({ community }) {
+    const { data: session } = useSession();
+    const isMember = session && community.members.includes(session.user.id);
+
     // Basic date formatting
     const createdAt = new Date(community.createdAt).toLocaleDateString('en-US', {
         month: 'short',
@@ -49,11 +55,7 @@ export default function CommunitySidebar({ community }) {
                     </div>
                 </div>
 
-                <Link href="/submit" style={{ textDecoration: 'none' }}>
-                    <button className={styles.createPostBtn}>
-                        Create Post
-                    </button>
-                </Link>
+
             </div>
 
             {/* Bookmarks Section (Mock) */}

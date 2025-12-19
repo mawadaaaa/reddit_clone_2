@@ -43,7 +43,19 @@ export async function POST(req) {
 export async function GET(req) {
     try {
         await dbConnect();
-        // Default limit 20
+        const { searchParams } = new URL(req.url);
+        const joined = searchParams.get('joined');
+
+        if (joined === 'true') {
+            const session = await getServerSession(authOptions);
+            if (!session) {
+                return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+            }
+            const communities = await Community.find({ members: session.user.id });
+            return NextResponse.json(communities, { status: 200 });
+        }
+
+        // Default behavior: Fetch all/top (limit 20)
         const communities = await Community.find({}).limit(20);
         return NextResponse.json(communities, { status: 200 });
     } catch (error) {

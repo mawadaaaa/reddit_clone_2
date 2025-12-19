@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import styles from './Submit.module.css';
-import { FaImage, FaLink, FaPoll, FaAngleDown } from 'react-icons/fa';
+import { FaImage, FaLink, FaAngleDown } from 'react-icons/fa';
 
 export default function SubmitPage() {
   const { data: session, status } = useSession();
@@ -18,6 +18,13 @@ export default function SubmitPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const searchParams = useSearchParams();
+  const communityParam = searchParams.get('community');
+
+  const [image, setImage] = useState('');
+  const [video, setVideo] = useState('');
+  const [link, setLink] = useState('');
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/?login=true');
@@ -28,16 +35,38 @@ export default function SubmitPage() {
 
   const fetchCommunities = async () => {
     try {
-      const res = await fetch('/api/communities');
+      const res = await fetch('/api/communities?joined=true');
       if (res.ok) {
         const data = await res.json();
         setCommunities(data);
-        // Pre-select if only one (optional logic)
+
+        if (communityParam) {
+          const preSelected = data.find(c => c.name === communityParam);
+          if (preSelected) {
+            setSelectedCommunity(preSelected);
+          }
+        }
       }
     } catch (err) {
       console.error('Failed to fetch communities');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setError('File too large (max 5MB)');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result);
+        setError('');
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -54,8 +83,10 @@ export default function SubmitPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
-          content: body
-          // Image/Link/Poll logic can be expanded here
+          content: activeTab === 'image' || activeTab === 'link' ? (body || ' ') : body,
+          image: activeTab === 'image' ? image : '',
+          video: activeTab === 'image' ? video : '',
+          link: activeTab === 'link' ? link : ''
         }),
       });
 
@@ -77,7 +108,7 @@ export default function SubmitPage() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.pageTitle}>Create a post</h1>
-        <div style={{ fontWeight: 'bold', fontSize: '12px', color: '#ff4500' }}>Drafts <span style={{ color: '#878A8C', fontWeight: 'normal' }}>0</span></div>
+        <h1 className={styles.pageTitle}>Create a post</h1>
       </div>
 
       <div className={styles.contentWrapper}>
@@ -148,14 +179,7 @@ export default function SubmitPage() {
               >
                 <FaLink /> Link
               </button>
-              <button
-                className={`${styles.tab} ${activeTab === 'poll' ? styles.active : ''}`}
-                onClick={() => setActiveTab('poll')}
-                disabled
-                style={{ opacity: 0.5, cursor: 'not-allowed' }}
-              >
-                <FaPoll /> Poll
-              </button>
+
             </div>
 
             <div className={styles.formContainer}>
@@ -168,6 +192,74 @@ export default function SubmitPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={300}
               />
+
+
+
+              {activeTab === 'image' && (
+                <div style={{ border: '1px dashed #343536', padding: '20px', borderRadius: '4px', textAlign: 'center', marginTop: '16px' }}>
+                  {!image && !video ? (
+                    <div>
+                      <p style={{ marginBottom: '16px' }}>Drag and drop images or</p>
+                      <label className="btn btn-outline" style={{ cursor: 'pointer', display: 'inline-block', marginBottom: '10px', color: 'var(--color-text-main)', borderColor: 'var(--color-text-main)' }}>
+                        Upload
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                      <p style={{ margin: '10px 0', fontWeight: 'bold', color: 'var(--color-text-dim)' }}>OR</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input
+                          type="url"
+                          placeholder="Paste Image URL"
+                          className={styles.inputField}
+                          value={image}
+                          onChange={(e) => setImage(e.target.value)}
+                        />
+                        <input
+                          type="url"
+                          placeholder="Paste Video URL (e.g., mp4 link)"
+                          className={styles.inputField}
+                          value={video}
+                          onChange={(e) => setVideo(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ position: 'relative' }}>
+                      {image && (
+                        <img src={image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '4px' }} />
+                      )}
+                      {video && (
+                        <video controls style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '4px' }}>
+                          <source src={video} />
+                        </video>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => { setImage(''); setVideo(''); }}
+                        style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer' }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'link' && (
+                <div style={{ marginTop: '16px' }}>
+                  <input
+                    type="url"
+                    placeholder="Url"
+                    className={styles.inputField}
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                  />
+                </div>
+              )}
 
               <div className={`${styles.toolbar} ${styles.darkToolbar}`}>
                 {/* Just visual placeholders for rich text toolbar */}
@@ -184,7 +276,7 @@ export default function SubmitPage() {
               />
 
               <div className={styles.actions}>
-                <button className="btn btn-outline">Save Draft</button>
+
                 <button
                   className="btn btn-primary"
                   onClick={handleSubmit}
