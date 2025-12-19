@@ -11,7 +11,7 @@ export default function RecentPosts({ posts }) {
     <div className={styles.widget}>
       <div className={styles.widgetHeader}>
         <h2>RECENT POSTS</h2>
-        <button className={styles.clearBtn} onClick={() => alert('Clear functionality not implemented yet')}>Clear</button>
+        <button className={styles.clearBtn} onClick={() => alert('Clear functionality not implemented yet')} suppressHydrationWarning>Clear</button>
       </div>
       <ul className={styles.list}>
         {posts.map((item, idx) => {

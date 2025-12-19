@@ -117,6 +117,28 @@ async function getUserDownvoted(userId) {
     return JSON.parse(JSON.stringify(postsWithCounts));
 }
 
+async function getUserKarma(userId) {
+    await dbConnect();
+
+    // Fetch all posts by user, only needing vote arrays
+    const userPosts = await Post.find({ author: userId }).select('upvotes downvotes').lean();
+    const postKarma = userPosts.reduce((acc, curr) => {
+        const up = curr.upvotes ? curr.upvotes.length : 0;
+        const down = curr.downvotes ? curr.downvotes.length : 0;
+        return acc + (up - down);
+    }, 0);
+
+    // Fetch all comments by user, only needing vote arrays
+    const userComments = await Comment.find({ author: userId }).select('upvotes downvotes').lean();
+    const commentKarma = userComments.reduce((acc, curr) => {
+        const up = curr.upvotes ? curr.upvotes.length : 0;
+        const down = curr.downvotes ? curr.downvotes.length : 0;
+        return acc + (up - down);
+    }, 0);
+
+    return postKarma + commentKarma;
+}
+
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
@@ -133,6 +155,8 @@ export default async function ProfilePage({ params, searchParams }) {
     if (!user) {
         notFound();
     }
+
+    const totalKarma = await getUserKarma(user._id);
 
     let posts = [];
     let comments = [];
@@ -392,9 +416,7 @@ export default async function ProfilePage({ params, searchParams }) {
 
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <div>
-                                    <div style={{ fontWeight: '700' }}>{
-                                        posts.reduce((acc, curr) => acc + (curr.upvotes?.length || 0) - (curr.downvotes?.length || 0), 0)
-                                    }</div>
+                                    <div style={{ fontWeight: '700' }}>{totalKarma}</div>
                                     <div style={{ fontSize: '12px', color: 'var(--color-text-dim)' }}>Karma</div>
                                 </div>
                                 <div>

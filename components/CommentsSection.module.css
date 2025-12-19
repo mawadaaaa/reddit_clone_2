@@ -1,5 +1,5 @@
 .container {
-    padding: 16px;
+    padding: 16px 0;
 }
 
 .form {
@@ -10,66 +10,166 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px;
+    padding: 12px 16px;
     border: 1px solid var(--color-border);
+    background: var(--color-surface);
     border-radius: 4px;
     margin-bottom: 24px;
+    color: var(--color-text-main);
 }
 
-.comment {
-    margin-bottom: 16px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #eee;
-}
-
-.comment:last-child {
-    border-bottom: none;
-}
-
-.commentHeader {
-    font-size: 12px;
-    margin-bottom: 4px;
+.commentList {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+}
+
+/* Thread Item Logic */
+.threadLine {
+    position: absolute;
+    left: 15px;
+    /* Center of the avatar (approx 30px width) */
+    top: 36px;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--color-border);
+    /* Default line color */
+    z-index: 0;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.threadLine:hover {
+    background-color: var(--color-primary);
+    /* Highlight on hover */
+}
+
+.commentContainer {
+    position: relative;
+    padding-left: 0;
+    /* Root comments have no indent? Or maybe just internal indent */
+    margin-top: 16px;
+}
+
+.commentWrapper {
+    position: relative;
+}
+
+.commentContent {
+    position: relative;
+    z-index: 1;
+}
+
+/* Header: Avatar, Name, Meta */
+.header {
+    display: flex;
     align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+.avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #333;
 }
 
 .author {
     font-weight: 700;
-    color: black;
+    color: var(--color-text-main);
+    text-decoration: none;
 }
 
-.date {
-    color: #878A8C;
+.author:hover {
+    text-decoration: underline;
 }
 
-.commentBody {
+.meta {
+    color: var(--color-text-dim);
+}
+
+.modTag {
+    color: #24A0ED;
+    font-weight: bold;
+    margin-left: 4px;
+}
+
+/* Body */
+.body {
+    padding-left: 38px;
+    /* Align with text start (30px avatar + 8px gap) */
+    color: var(--color-text-main);
     font-size: 14px;
     line-height: 21px;
     margin-bottom: 8px;
+    word-wrap: break-word;
 }
 
-.replies {
-    margin-left: 20px;
-    padding-left: 10px;
-    border-left: 2px solid #edeff1;
-}
-
-.replyBtn {
-    background: none;
-    border: none;
-    padding: 0;
+/* Actions: Upvote, Reply, etc. */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 38px;
+    color: var(--color-text-dim);
     font-size: 12px;
     font-weight: 700;
-    color: #878A8C;
+}
+
+.actionBtn {
+    background: none;
+    border: none;
+    color: inherit;
+    font-weight: inherit;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+.actionBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.voteGroup {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-.replyBtn:hover {
+/* Children / Nested */
+.children {
+    margin-left: 15px;
+    /* Offset for next level */
+    padding-left: 0;
+    border-left: 2px solid var(--color-border);
+    /* The visual thread line for children container */
+}
+
+/* Collapse / Expand Toggle */
+.expandBtn {
+    position: absolute;
+    left: -8px;
+    /* Centered on the border line */
+    top: 36px;
+    /* Below avatar */
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    color: var(--color-text-dim);
+}
+
+.expandBtn:hover {
     color: var(--color-text-main);
-    background: #f5f6f7;
-    border-radius: 2px;
 }

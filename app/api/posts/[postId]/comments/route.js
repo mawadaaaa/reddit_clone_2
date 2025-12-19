@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import dbConnect from '@/lib/db';
 import Comment from '@/models/Comment';
+import Post from '@/models/Post';
+import Notification from '@/models/Notification';
 import { authOptions } from '../../../auth/[...nextauth]/route';
 
 export async function POST(req, { params }) {
@@ -16,6 +18,7 @@ export async function POST(req, { params }) {
         // const { postId } = params;
         const { content, parentComment } = await req.json();
 
+        // 1. Create Comment
         const newComment = await Comment.create({
             content,
             post: postId,
@@ -25,6 +28,43 @@ export async function POST(req, { params }) {
 
         // Populate author for immediate return
         await newComment.populate('author', 'username');
+
+        // 2. Notification Logic
+        // We need to fetch the post to know the author
+        // And if parentComment, fetch that too.
+
+        try {
+            const post = await Post.findById(postId);
+            let recipientId = null;
+            let type = 'post_reply';
+
+            if (parentComment) {
+                const parent = await Comment.findById(parentComment);
+                if (parent) {
+                    recipientId = parent.author;
+                    type = 'comment_reply';
+                }
+            } else {
+                // Top level comment -> notify post author
+                if (post) {
+                    recipientId = post.author;
+                }
+            }
+
+            // Only notify if recipient exists AND isn't the sender (no self-notify)
+            if (recipientId && recipientId.toString() !== session.user.id) {
+                await Notification.create({
+                    recipient: recipientId,
+                    sender: session.user.id,
+                    type,
+                    post: postId,
+                    comment: newComment._id
+                });
+            }
+
+        } catch (notifError) {
+            console.error('Notification creation failed (non-blocking):', notifError);
+        }
 
         return NextResponse.json(newComment, { status: 201 });
     } catch (error) {

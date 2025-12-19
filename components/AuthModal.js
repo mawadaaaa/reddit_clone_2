@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import styles from './AuthModal.module.css';
-import { FaReddit } from 'react-icons/fa';
+import { FaReddit, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function AuthModal({ isOpen, onClose }) {
     const [login, setLogin] = useState(''); // Email or Username for Login
     const [email, setEmail] = useState(''); // Email for Signup
     const [username, setUsername] = useState(''); // Username for Signup
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isLogin, setIsLogin] = useState(true);
 
@@ -106,65 +107,84 @@ export default function AuthModal({ isOpen, onClose }) {
 
                 <div className={styles.header}>
                     <FaReddit size={40} color="#FF4500" />
-                    <h2>{isLogin ? 'Log In' : 'Sign Up'}</h2>
-                    <p style={{ maxWidth: '300px', margin: '0 auto' }}>By continuing, you start your journey on our Reddit Clone.</p>
+                    <h2>
+                        {isLogin ? 'Log In' : 'Sign Up'}
+                    </h2>
+                    <p style={{ maxWidth: '300px', margin: '0 auto' }}>
+                        By continuing, you start your journey on our Reddit Clone.
+                    </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className={styles.form}>
                     {error && <div style={{ color: 'red', fontSize: '12px', marginBottom: '8px' }}>{error}</div>}
 
-                    {isLogin ? (
-                        <>
-                            <input
-                                type="text"
-                                placeholder="Email or username"
-                                className={styles.input}
-                                value={login}
-                                onChange={(e) => setLogin(e.target.value)}
-                                required
-                            />
-                        </>
-                    ) : (
-                        <>
-                            <input
-                                type="email"
-                                placeholder="Email"
-                                className={styles.input}
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                            <input
-                                type="text"
-                                placeholder="Username"
-                                className={styles.input}
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
-                            />
-                        </>
-                    )}
+                    <>
+                        {isLogin ? (
+                            <>
+                                <input
+                                    type="text"
+                                    placeholder="Email or username"
+                                    className={styles.input}
+                                    value={login}
+                                    onChange={(e) => setLogin(e.target.value)}
+                                    required
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    className={styles.input}
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Username"
+                                    className={styles.input}
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                />
+                            </>
+                        )}
 
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        className={styles.input}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-
-                    {isLogin && (
-                        <div style={{ textAlign: 'left', marginTop: '4px' }}>
-                            <a href="#" style={{ color: '#0079D3', fontSize: '12px', fontWeight: 'bold', textDecoration: 'none' }} onClick={(e) => e.preventDefault()}>
-                                Forgot password?
-                            </a>
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Password"
+                                className={styles.input}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                style={{ width: '100%' }}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                style={{
+                                    position: 'absolute',
+                                    right: '12px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: 'var(--color-text-dim)',
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                            </button>
                         </div>
-                    )}
 
-                    <button type="submit" className={styles.submitBtn + ' ' + styles.orangeBtn}>
-                        {isLogin ? 'Log In' : 'Sign Up'}
-                    </button>
+                        <button type="submit" className={styles.submitBtn + ' ' + styles.orangeBtn}>
+                            {isLogin ? 'Log In' : 'Sign Up'}
+                        </button>
+                    </>
                 </form>
 
                 <div className={styles.footer}>

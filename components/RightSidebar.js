@@ -4,12 +4,12 @@ import Link from 'next/link';
 import { FaReddit } from 'react-icons/fa';
 import styles from './RightSidebar.module.css';
 
-export default function RightSidebar({ communities }) {
+export default function RightSidebar({ communities, title = "POPULAR COMMUNITIES" }) {
     return (
         <aside className={styles.sidebar}>
             <div className={styles.widget}>
                 <div className={styles.widgetHeader}>
-                    <h2>POPULAR COMMUNITIES</h2>
+                    <h2>{title}</h2>
                 </div>
                 <ul className={styles.list}>
                     {communities.map((community, idx) => (

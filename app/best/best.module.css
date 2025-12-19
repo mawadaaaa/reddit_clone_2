@@ -1,0 +1,19 @@
+.header {
+    margin-bottom: 24px;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--color-text-main);
+    margin: 0;
+}
+
+.subtitle {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+}

@@ -23,6 +23,42 @@ export default function Navbar() {
     const dropdownRef = useRef(null);
     const searchRef = useRef(null);
 
+    // Notifications
+    const [isNotifOpen, setIsNotifOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const fetchNotifications = async () => {
+        if (session?.user) {
+            try {
+                const res = await fetch('/api/notifications');
+                if (res.ok) {
+                    const data = await res.json();
+                    setNotifications(data.notifications);
+                    setUnreadCount(data.unreadCount);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    };
+
+    const markNotificationsRead = async () => {
+        try {
+            await fetch('/api/notifications', { method: 'PATCH' });
+            setUnreadCount(0);
+            // Optionally update local read status of list
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        } catch (e) { console.error(e); }
+    };
+
+    useEffect(() => {
+        fetchNotifications();
+        // Poll every minute? Or just once on mount/session change
+        const interval = setInterval(fetchNotifications, 60000);
+        return () => clearInterval(interval);
+    }, [session]);
+
     // Debounce search
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -98,6 +134,7 @@ export default function Navbar() {
                         </svg>
                     </div>
                     <input
+                        suppressHydrationWarning
                         type="text"
                         placeholder="Search Reddit"
                         className={styles.searchInput}
@@ -109,6 +146,7 @@ export default function Navbar() {
                     />
                     {query && (
                         <button
+                            suppressHydrationWarning
                             type="button"
                             className={styles.clearButton}
                             onClick={() => {
@@ -186,9 +224,104 @@ export default function Navbar() {
                             <span>Create</span>
                         </Link>
 
-                        <button className={styles.iconButton}>
-                            <FaBell />
-                        </button>
+                        <div className={styles.iconButtonWrapper} style={{ position: 'relative' }}>
+                            <button
+                                className={styles.iconButton}
+                                onClick={() => {
+                                    setIsNotifOpen(!isNotifOpen);
+                                    if (!isNotifOpen && unreadCount > 0) {
+                                        markNotificationsRead();
+                                    }
+                                }}
+                            >
+                                <FaBell />
+                                {unreadCount > 0 && (
+                                    <span style={{
+                                        position: 'absolute',
+                                        top: '-2px',
+                                        right: '-2px',
+                                        background: '#FF4500',
+                                        color: 'white',
+                                        fontSize: '10px',
+                                        fontWeight: 'bold',
+                                        borderRadius: '50%',
+                                        width: '16px',
+                                        height: '16px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        border: '2px solid var(--color-surface)'
+                                    }}>
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </button>
+
+                            {isNotifOpen && (
+                                <div style={{
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: '100%',
+                                    marginTop: '8px',
+                                    width: '320px',
+                                    maxHeight: '400px',
+                                    overflowY: 'auto',
+                                    background: 'var(--color-surface)',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: '4px',
+                                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                                    zIndex: 100
+                                }}>
+                                    <div style={{ padding: '12px', borderBottom: '1px solid var(--color-border)', fontWeight: 'bold' }}>
+                                        Notifications
+                                    </div>
+                                    {notifications.length === 0 ? (
+                                        <div style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-dim)' }}>
+                                            No notifications
+                                        </div>
+                                    ) : (
+                                        notifications.map(notif => (
+                                            <Link
+                                                key={notif._id}
+                                                href={`/r/${notif.post?.community || 'all'}/comments/${notif.post?._id}`}
+                                                style={{
+                                                    display: 'flex',
+                                                    gap: '10px',
+                                                    padding: '12px',
+                                                    textDecoration: 'none',
+                                                    color: 'inherit',
+                                                    borderBottom: '1px solid var(--color-border)',
+                                                    background: notif.read ? 'transparent' : 'rgba(36, 160, 237, 0.1)'
+                                                }}
+                                                onClick={() => setIsNotifOpen(false)}
+                                            >
+                                                <div style={{ flexShrink: 0 }}>
+                                                    <img
+                                                        src={notif.sender?.image || `https://api.dicebear.com/7.x/identicon/svg?seed=${notif.sender?.username}`}
+                                                        alt="avatar"
+                                                        style={{ width: 32, height: 32, borderRadius: '50%' }}
+                                                    />
+                                                </div>
+                                                <div style={{ fontSize: '13px' }}>
+                                                    <span style={{ fontWeight: 'bold' }}>u/{notif.sender?.username}</span>
+                                                    {' '}
+                                                    <span style={{ color: 'var(--color-text-dim)' }}>
+                                                        {notif.type === 'post_reply' ? 'commented on your post' : 'replied to your comment'}
+                                                    </span>
+                                                    {' '}
+                                                    <span style={{ color: 'var(--color-text-main)' }}>
+                                                        {notif.post?.title?.substring(0, 30)}...
+                                                    </span>
+                                                    <div style={{ fontSize: '11px', color: 'var(--color-text-dim)', marginTop: '4px' }}>
+                                                        {new Date(notif.createdAt).toLocaleDateString()}
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        ))
+                                    )}
+                                </div>
+                            )}
+                        </div>
 
                         <div className={styles.dropdownWrapper} ref={dropdownRef}>
                             <button
@@ -250,7 +383,7 @@ export default function Navbar() {
                     </div>
                 ) : (
                     <>
-                        <button onClick={() => setIsAuthModalOpen(true)} className="btn btn-primary">Log In</button>
+                        <button onClick={() => setIsAuthModalOpen(true)} className="btn btn-primary" suppressHydrationWarning>Log In</button>
                     </>
                 )}
             </div>

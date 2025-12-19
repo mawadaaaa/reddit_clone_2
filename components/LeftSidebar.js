@@ -230,14 +230,7 @@ export default function LeftSidebar() {
                     <FaChartLine size={20} />
                     Best of Reddit
                 </Link>
-                <Link href="/topics/pt" className={styles.link}>
-                    <FaCompass size={20} />
-                    Best of Reddit in Port...
-                </Link>
-                <Link href="/topics/de" className={styles.link}>
-                    <FaCompass size={20} />
-                    Best of Reddit in Ger...
-                </Link>
+
             </div>
 
 

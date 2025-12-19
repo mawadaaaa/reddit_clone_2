@@ -246,6 +246,36 @@ export default function PostCard({ post, communityName, enableAI = false }) {
 
     const isOwner = session?.user?.name === post.author?.username;
 
+    // Editing Logic
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState(post.content);
+
+    const handleEditSave = async () => {
+        try {
+            const res = await fetch(`/api/posts/${post._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: editContent }),
+            });
+
+            if (res.ok) {
+                // Determine if we need to reload or just update local prop logic?
+                // Ideally update local state if possible, but PostCard typically relies on props.
+                // Since this is a list item usually, refreshing might be easier or notifying parent.
+                // But let's try to update displayed content locally first for speed.
+                // We don't have a 'setPost' prop, so we rely on page reload OR
+                // we assume the parent re-fetches.
+                // BUT, forcing a reload ensures DB sync visually.
+                window.location.reload();
+            } else {
+                alert('Failed to update post');
+            }
+        } catch (error) {
+            console.error('Update failed', error);
+            alert('Error updating post');
+        }
+    };
+
     return (
         <div className={styles.card}>
             <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
@@ -291,7 +321,7 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                             }}>
                                 {isOwner && (
                                     <>
-                                        <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); alert('Edit clicked'); setShowMenu(false); }}>
+                                        <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); setIsEditing(true); setShowMenu(false); }}>
                                             <FaEdit style={{ marginRight: '10px' }} /> Edit post body
                                         </button>
                                         <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); handleDelete(); }} style={{ color: '#FF4500' }}>
@@ -369,10 +399,26 @@ export default function PostCard({ post, communityName, enableAI = false }) {
 
                 {/* Body Text */}
                 <div className={styles.body}>
-                    {post.content.length > 200 && !enableAI ? post.content.substring(0, 200) + '...' : post.content}
+                    {isEditing ? (
+                        <div style={{ marginTop: '8px' }}>
+                            <textarea
+                                className="input-field"
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                rows={6}
+                                style={{ width: '100%', marginBottom: '8px', background: 'var(--color-input)', color: 'var(--color-text-main)', padding: '8px', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                            />
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                <button onClick={() => setIsEditing(false)} className="btn" style={{ background: 'transparent', color: 'var(--color-text-main)' }}>Cancel</button>
+                                <button onClick={handleEditSave} className="btn btn-primary" style={{ borderRadius: '99px' }}>Save</button>
+                            </div>
+                        </div>
+                    ) : (
+                        post.content.length > 200 && !enableAI ? post.content.substring(0, 200) + '...' : post.content
+                    )}
                 </div>
 
-                {enableAI && <AISummary content={post.content} />}
+                {enableAI && !isEditing && <AISummary content={post.content} title={post.title} />}
 
                 {/* Footer Actions (Vote Pill + Comment Pill + Share Pill) */}
                 <div className={styles.footer}>

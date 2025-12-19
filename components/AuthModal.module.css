@@ -13,7 +13,7 @@
 }
 
 .modal {
-    background: white;
+    background: var(--color-surface);
     width: 400px;
     padding: 32px;
     border-radius: 12px;
@@ -44,7 +44,7 @@
 
 .header p {
     font-size: 12px;
-    color: #1a1a1b;
+    color: var(--color-text-dim);
 }
 
 
@@ -60,13 +60,14 @@
     border: 1px solid var(--color-border);
     border-radius: 20px;
     /* More rounded */
-    background: #f6f7f8;
+    background: var(--color-input);
+    color: var(--color-text-main);
     outline: none;
 }
 
 .input:focus {
     border-color: #0079D3;
-    background: white;
+    background: var(--color-input);
 }
 
 .submitBtn {
