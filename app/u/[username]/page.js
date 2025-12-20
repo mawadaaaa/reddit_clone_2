@@ -401,15 +401,7 @@ export default async function ProfilePage({ params, searchParams }) {
                             <p style={{ fontSize: '12px', color: 'var(--color-text-dim)' }}>u/{user.username}</p>
                         </div>
 
-                        {isOwner && (
-                            <button
-                                className="btn btn-primary"
-                                style={{ width: '100%', borderRadius: '999px', background: 'linear-gradient(90deg, #EC0623 0%, #FF8717 100%)', border: 'none' }}
-                                suppressHydrationWarning
-                            >
-                                Create Avatar
-                            </button>
-                        )}
+
 
                         <div style={{ padding: '16px 0', borderBottom: '1px solid var(--color-border)' }}>
                             <div style={{ fontSize: '14px', marginBottom: '12px' }}>
