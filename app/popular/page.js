@@ -3,6 +3,7 @@ import RightSidebar from '@/components/RightSidebar';
 import dbConnect from '@/lib/db';
 import Post from '@/models/Post';
 import Community from '@/models/Community';
+import Comment from '@/models/Comment';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,10 +34,15 @@ async function getPopularFeed() {
     // Let's use lookup for author and community
     const populated = await Post.populate(posts, [
         { path: 'author', select: 'username' },
-        { path: 'community', select: 'name' }
+        { path: 'community', select: 'name icon' }
     ]);
 
-    return JSON.parse(JSON.stringify(populated));
+    const postsWithCounts = await Promise.all(populated.map(async (post) => {
+        const commentCount = await Comment.countDocuments({ post: post._id });
+        return { ...post, commentCount };
+    }));
+
+    return JSON.parse(JSON.stringify(postsWithCounts));
 }
 
 async function getTopCommunities() {

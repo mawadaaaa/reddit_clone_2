@@ -23,8 +23,8 @@ async function getFeed(userId = null) {
 
   // Temporarily removed populate to test basic fetching -> Restoring now
   const posts = await Post.find(query)
-    .populate('author', 'username')
-    .populate('community', 'name')
+    .populate('author', 'username image')
+    .populate('community', 'name icon')
     .sort({ createdAt: -1 })
     .limit(20)
     .lean();

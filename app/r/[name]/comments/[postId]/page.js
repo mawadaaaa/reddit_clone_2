@@ -8,9 +8,12 @@ import CommentsSection from '@/components/CommentsSection';
 import RightSidebar from '@/components/RightSidebar';
 import Link from 'next/link';
 
+import mongoose from 'mongoose';
+
 async function getPost(id) {
+    if (!mongoose.isValidObjectId(id)) return null;
     await dbConnect();
-    const post = await Post.findById(id).populate('author', 'username').populate('community', 'name').lean();
+    const post = await Post.findById(id).populate('author', 'username image').populate('community', 'name').lean();
     if (!post) return null;
 
     const commentCount = await Comment.countDocuments({ post: post._id });
@@ -22,7 +25,7 @@ async function getPost(id) {
 async function getComments(postId) {
     await dbConnect();
     const comments = await Comment.find({ post: postId })
-        .populate('author', 'username')
+        .populate('author', 'username image')
         .sort({ createdAt: -1 });
     return JSON.parse(JSON.stringify(comments));
 }

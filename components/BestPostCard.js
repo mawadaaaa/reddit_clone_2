@@ -24,11 +24,11 @@ export default function BestPostCard({ post }) {
             <div className={styles.content}>
                 <div className={styles.header}>
                     <Link href={`/r/${communityName}`} className={styles.subreddit}>
-                        <img
-                            src={`https://api.dicebear.com/7.x/identicon/svg?seed=${communityName}`}
-                            alt="icon"
-                            className={styles.subredditIcon}
-                        />
+                        {post.community?.icon ? (
+                            <img src={post.community.icon} alt="icon" className={styles.subredditIcon} />
+                        ) : (
+                            <img src="/default-subreddit.png" alt="icon" className={styles.subredditIcon} />
+                        )}
                         r/{communityName}
                     </Link>
                 </div>

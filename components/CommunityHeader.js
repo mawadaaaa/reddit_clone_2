@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FaBell, FaRegBell, FaEllipsisH, FaPlus, FaStar, FaVolumeMute } from 'react-icons/fa';
+import { FaEllipsisH, FaPlus, FaStar } from 'react-icons/fa';
 import styles from './CommunityHeader.module.css';
 import AddToFeedModal from './AddToFeedModal';
 
@@ -16,21 +16,21 @@ export default function CommunityHeader({ community }) {
     const [joined, setJoined] = useState(isMember);
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        if (session && community.members) {
+            setJoined(community.members.includes(session.user.id));
+        }
+    }, [session, community.members]);
+
     // UI State
-    const [bellOpen, setBellOpen] = useState(false);
     const [dotsOpen, setDotsOpen] = useState(false);
     const [isFeedModalOpen, setIsFeedModalOpen] = useState(false);
-    const [notificationLevel, setNotificationLevel] = useState('low'); // 'off', 'low', 'all'
 
-    const bellRef = useRef(null);
     const dotsRef = useRef(null);
 
     // Close menus on click outside
     useEffect(() => {
         function handleClickOutside(event) {
-            if (bellRef.current && !bellRef.current.contains(event.target)) {
-                setBellOpen(false);
-            }
             if (dotsRef.current && !dotsRef.current.contains(event.target)) {
                 setDotsOpen(false);
             }
@@ -108,9 +108,7 @@ export default function CommunityHeader({ community }) {
                         {community.icon ? (
                             <img src={community.icon} alt={community.name} className={styles.icon} />
                         ) : (
-                            <div className={styles.icon} style={{ backgroundColor: themeColor }}>
-                                r/
-                            </div>
+                            <img src="/default-subreddit.png" alt={community.name} className={styles.icon} />
                         )}
                     </div>
 
@@ -129,28 +127,7 @@ export default function CommunityHeader({ community }) {
                                 </Link>
                             )}
 
-                            {/* Bell Button */}
-                            <div style={{ position: 'relative' }} ref={bellRef}>
-                                <button
-                                    className={`${styles.iconBtn} ${bellOpen ? styles.active : ''}`}
-                                    onClick={() => setBellOpen(!bellOpen)}
-                                >
-                                    {notificationLevel === 'off' ? <FaRegBell /> : <FaBell />}
-                                </button>
-                                {bellOpen && (
-                                    <div className={styles.dropdown}>
-                                        <button className={styles.dropdownItem} onClick={() => { setNotificationLevel('off'); setBellOpen(false); }}>
-                                            <FaRegBell /> Off
-                                        </button>
-                                        <button className={styles.dropdownItem} onClick={() => { setNotificationLevel('low'); setBellOpen(false); }}>
-                                            <FaBell /> Low
-                                        </button>
-                                        <button className={styles.dropdownItem} onClick={() => { setNotificationLevel('all'); setBellOpen(false); }}>
-                                            <FaBell style={{ color: 'var(--color-primary)' }} /> All
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
+
 
                             <button
                                 onClick={handleJoin}
@@ -176,9 +153,7 @@ export default function CommunityHeader({ community }) {
                                         <button className={styles.dropdownItem} onClick={handleFavorite}>
                                             <FaStar /> Add to favorites
                                         </button>
-                                        <button className={styles.dropdownItem} onClick={() => setDotsOpen(false)}>
-                                            <FaVolumeMute /> Mute r/{community.name}
-                                        </button>
+
                                     </div>
                                 )}
                             </div>

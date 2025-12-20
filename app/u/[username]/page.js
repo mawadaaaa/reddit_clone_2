@@ -317,9 +317,8 @@ export default async function ProfilePage({ params, searchParams }) {
                                 comments.map(comment => (
                                     <div key={comment._id} className="card" style={{ padding: '10px', fontSize: '14px' }}>
                                         <div style={{ marginBottom: '8px', color: 'var(--color-text-dim)', fontSize: '12px' }}>
-                                            <Link href={`/u/${comment.author.username}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>{comment.author.username}</Link> commented on <Link href={`/r/${comment.post?.community?.name || 'unknown'}/comments/${comment.post?._id}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>{comment.post?.title || 'deleted post'}</Link> • <Link href={`/r/${comment.post?.community?.name || 'unknown'}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>r/{comment.post?.community?.name || 'unknown'}</Link>
-                                        </div>
-                                        <div style={{ padding: '8px', background: 'var(--color-bg)', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                                            <Link href={`/u/${comment.author.username}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>{comment.author.username}</Link> commented on {comment.post ? <Link href={`/r/${comment.post.community?.name || 'unknown'}/comments/${comment.post._id}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>{comment.post.title}</Link> : <span style={{ color: 'var(--color-text-dim)', fontStyle: 'italic' }}>deleted post</span>} • {comment.post?.community ? <Link href={`/r/${comment.post.community.name}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>r/{comment.post.community.name}</Link> : <span style={{ color: 'var(--color-text-dim)' }}>r/unknown</span>}
+                                        </div>                                        <div style={{ padding: '8px', background: 'var(--color-bg)', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
                                             {comment.content}
                                         </div>
                                     </div>
@@ -338,9 +337,8 @@ export default async function ProfilePage({ params, searchParams }) {
                                         return (
                                             <div key={item._id} className="card" style={{ padding: '10px', fontSize: '14px' }}>
                                                 <div style={{ marginBottom: '8px', color: 'var(--color-text-dim)', fontSize: '12px' }}>
-                                                    <Link href={`/u/${item.author.username}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>{item.author.username}</Link> commented on <Link href={`/r/${item.post?.community?.name || 'unknown'}/comments/${item.post?._id}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>{item.post?.title || 'deleted post'}</Link> • <Link href={`/r/${item.post?.community?.name || 'unknown'}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>r/{item.post?.community?.name || 'unknown'}</Link>
-                                                </div>
-                                                <div style={{ padding: '8px', background: 'var(--color-bg)', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                                                    <Link href={`/u/${item.author.username}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>{item.author.username}</Link> commented on {item.post ? <Link href={`/r/${item.post.community?.name || 'unknown'}/comments/${item.post._id}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>{item.post.title}</Link> : <span style={{ color: 'var(--color-text-dim)', fontStyle: 'italic' }}>deleted post</span>} • {item.post?.community ? <Link href={`/r/${item.post.community.name}`} style={{ color: 'var(--color-text-main)', fontWeight: 'bold' }}>r/{item.post.community.name}</Link> : <span style={{ color: 'var(--color-text-dim)' }}>r/unknown</span>}
+                                                </div>                                                <div style={{ padding: '8px', background: 'var(--color-bg)', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
                                                     {item.content}
                                                 </div>
                                             </div>
@@ -404,7 +402,11 @@ export default async function ProfilePage({ params, searchParams }) {
                         </div>
 
                         {isOwner && (
-                            <button className="btn btn-primary" style={{ width: '100%', borderRadius: '999px', background: 'linear-gradient(90deg, #EC0623 0%, #FF8717 100%)', border: 'none' }}>
+                            <button
+                                className="btn btn-primary"
+                                style={{ width: '100%', borderRadius: '999px', background: 'linear-gradient(90deg, #EC0623 0%, #FF8717 100%)', border: 'none' }}
+                                suppressHydrationWarning
+                            >
                                 Create Avatar
                             </button>
                         )}

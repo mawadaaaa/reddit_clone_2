@@ -1,90 +1,108 @@
 import { NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function POST(req) {
     try {
         const { content, title } = await req.json();
 
+        // DEBUG LOGGING
+        console.log("--- AI SUMMARY REQUEST ---");
+        console.log("Has Content:", !!content);
+        console.log("Key Exists:", !!process.env.GEMINI_API_KEY);
+        console.log("Key Length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
+
         if (!content || typeof content !== 'string') {
             return NextResponse.json({ summary: "No content available to summarize." });
         }
 
-        // --- Enhanced Extractive Summarization Logic ---
+        // --- 1. Generative AI Logic (Google Gemini) ---
+        if (process.env.GEMINI_API_KEY) {
+            try {
+                const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+                // Switch to Lite model to avoid 429 Rate Limits
+                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite-preview-02-05" });
 
-        // 1. Sentence Segmentation (Better Regex)
-        // Splits on . ! ? but tries to avoid common abbreviations like Mr. Dr. etc. (basic attempt)
-        const rawSentences = content.match(/[^.!?\s][^.!?]*(?:[.!?](?!['"]?\s|$)[^.!?]*)*[.!?]?['"]?(?=\s|$)/g) || [content];
+                const prompt = `Summarize the following Reddit post titled "${title || 'Untitled'}". 
+                Provide the summary as 1 to 3 concise, information-dense bullet points. 
+                Do not use conversational filler (e.g., "The post discusses..."). Just state the points.
+                
+                Content:
+                ${content.substring(0, 10000)} // Limit context to avoid errors
+                `;
+
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const text = response.text();
+
+                // Ensure it looks like bullets if the model didn't do it perfectly
+                const summary = text.startsWith('•') || text.startsWith('-') || text.startsWith('*')
+                    ? text
+                    : text.split('\n').map(line => line.trim() && !line.startsWith('•') ? `• ${line}` : line).join('\n');
+
+                return NextResponse.json({ summary: summary.trim() });
+
+            } catch (aiError) {
+                console.error("Gemini API Error (Falling back to local):", aiError);
+                // Continue to fallback...
+            }
+        }
+
+        // --- 2. Fallback: Enhanced Extractive Summarization Logic ---
+        // (Used if no API key is set OR if the API fails)
+
+        // Sentence Segmentation (Using Intl.Segmenter)
+        const segmenter = new Intl.Segmenter('en', { granularity: 'sentence' });
+        const rawSentences = Array.from(segmenter.segment(content)).map(s => s.segment.trim());
 
         // Filter out very short noise
-        const sentences = rawSentences.filter(s => s.trim().length > 10);
+        const sentences = rawSentences.filter(s => s.length > 15);
 
         if (sentences.length === 0) {
-            return NextResponse.json({ summary: content.substring(0, 100) + "..." });
+            return NextResponse.json({ summary: "• " + content.substring(0, 100) + "..." });
         }
-        if (sentences.length <= 2) {
-            // Return formatted bullets even for short content
-            const bullets = sentences.map(s => `• ${s.trim()}`).join('\n');
+        if (sentences.length <= 3) {
+            const bullets = sentences.map(s => `• ${s}`).join('\n\n');
             return NextResponse.json({ summary: bullets });
         }
 
-        // 2. Tokenization & cleanup
-        const stopWords = new Set(['the', 'is', 'at', 'which', 'on', 'and', 'a', 'an', 'in', 'to', 'of', 'for', 'it', 'this', 'that', 'with', 'as', 'be', 'are', 'was', 'were', 'by', 'but', 'not', 'or', 'if', 'from', 'about', 'can', 'will', 'my', 'your', 'we', 'they', 'he', 'she', 'i', 'you', 'me', 'so', 'just', 'all', 'some', 'like', 'have', 'do']);
+        // Tokenization & cleanup
+        const stopWords = new Set(['the', 'is', 'at', 'which', 'on', 'and', 'a', 'an', 'in', 'to', 'of', 'for', 'it', 'this', 'that', 'with', 'as', 'be', 'are', 'was', 'were', 'by', 'but', 'not', 'or', 'if', 'from', 'about', 'can', 'will', 'my', 'your', 'we', 'they', 'he', 'she', 'i', 'you', 'me', 'so', 'just', 'all', 'some', 'like', 'have', 'do', 'has', 'had', 'been', 'would', 'could', 'should']);
+        const tokenize = (text) => text.toLowerCase().match(/\b[a-z]{2,}\b/g) || [];
 
-        const tokenize = (text) => text.toLowerCase().match(/\b\w+\b/g) || [];
-
-        // 3. Frequency Analysis
+        // Scoring
         const wordFreq = {};
         const contentWords = tokenize(content);
-
         contentWords.forEach(word => {
-            if (!stopWords.has(word) && word.length > 2) {
+            if (!stopWords.has(word)) {
                 wordFreq[word] = (wordFreq[word] || 0) + 1;
             }
         });
 
-        // 4. Title Analysis
         const titleWords = new Set(tokenize(title || ''));
-
-        // 5. Scoring Sentences
         const sentenceScores = sentences.map((sentence, index) => {
             const words = tokenize(sentence);
             if (words.length === 0) return { text: sentence, score: 0, index };
 
             let score = 0;
             words.forEach(word => {
-                // Base frequency score
-                if (wordFreq[word]) {
-                    score += wordFreq[word];
-                }
-                // Title boost (3x weight)
-                if (titleWords.has(word) && !stopWords.has(word)) {
-                    score += (wordFreq[word] || 1) * 3;
-                }
+                if (wordFreq[word]) score += wordFreq[word];
+                if (titleWords.has(word) && !stopWords.has(word)) score += (wordFreq[word] || 1) * 2.5;
             });
 
-            // Normalize by length (penalize overly long sentences slightly)
-            score = score / (words.length * 0.8);
+            score = score / Math.pow(words.length, 0.5);
 
-            // Position Boost
-            // 1st sentence gets huge boost (Lead bias)
-            if (index === 0) score *= 2.0;
-            // 2nd sentence gets small boost
-            if (index === 1) score *= 1.5;
+            if (index === 0) score *= 1.8;
+            if (index === sentences.length - 1) score *= 1.4;
 
-            return { text: sentence.trim(), score, index };
+            return { text: sentence, score, index };
         });
 
-        // 6. Selection & Formatting
-        // Sort by score descending
         const topSentences = sentenceScores
             .sort((a, b) => b.score - a.score)
-            .slice(0, 3) // Top 3
-            .sort((a, b) => a.index - b.index); // Restore order
+            .slice(0, 3)
+            .sort((a, b) => a.index - b.index);
 
-        // Retrieve valid text and ensure bullet points
         const summaryText = topSentences.map(s => `• ${s.text}`).join('\n\n');
-
-        // Simulate thinking time
-        await new Promise(resolve => setTimeout(resolve, 800));
 
         return NextResponse.json({ summary: summaryText });
     } catch (error) {

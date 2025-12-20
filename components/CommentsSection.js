@@ -8,9 +8,12 @@ import AuthModal from './AuthModal';
 import { FaArrowUp, FaArrowDown, FaCommentAlt, FaReply } from 'react-icons/fa';
 
 // Recursive Comment Item Component
-function CommentItem({ comment, depth = 0, onReply, session, isModalOpen, setIsModalOpen }) {
+// Recursive Comment Item Component
+function CommentItem({ comment, depth = 0, onReply, onEdit, onDelete, session, isModalOpen, setIsModalOpen }) {
     const [collapsed, setCollapsed] = useState(false);
     const [isReplying, setIsReplying] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(comment.content);
 
     // Initial state
     const [score, setScore] = useState((comment.upvotes?.length || 0) - (comment.downvotes?.length || 0));
@@ -21,6 +24,9 @@ function CommentItem({ comment, depth = 0, onReply, session, isModalOpen, setIsM
         return null;
     });
 
+    const isAuthor = session?.user?.id === comment.author?._id;
+    const isDeleted = comment.isDeleted;
+
     const handleReplyClick = () => {
         if (!session) {
             setIsModalOpen(true);
@@ -30,6 +36,7 @@ function CommentItem({ comment, depth = 0, onReply, session, isModalOpen, setIsM
     };
 
     const handleVote = async (type) => {
+        if (isDeleted) return;
         if (!session) {
             setIsModalOpen(true);
             return;
@@ -72,6 +79,12 @@ function CommentItem({ comment, depth = 0, onReply, session, isModalOpen, setIsM
         }
     };
 
+    const handleEditSubmit = (e) => {
+        e.preventDefault();
+        onEdit(comment._id, editText);
+        setIsEditing(false);
+    };
+
     if (collapsed) {
         return (
             <div className={styles.commentContainer} style={{ marginLeft: depth > 0 ? 0 : 0 }}>
@@ -79,7 +92,7 @@ function CommentItem({ comment, depth = 0, onReply, session, isModalOpen, setIsM
                     <button onClick={() => setCollapsed(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-dim)' }}>
                         [+]
                     </button>
-                    <span className={styles.author} style={{ fontSize: '12px' }}>{comment.author?.username || 'deleted'}</span>
+                    <span className={styles.author} style={{ fontSize: '12px' }}>{isDeleted ? '[deleted]' : comment.author?.username || 'deleted'}</span>
                     <span className={styles.meta} style={{ fontSize: '12px' }}>{new Date(comment.createdAt).toLocaleDateString()}</span>
                 </div>
             </div>
@@ -91,14 +104,40 @@ function CommentItem({ comment, depth = 0, onReply, session, isModalOpen, setIsM
             <div className={styles.commentWrapper}>
                 {/* Header */}
                 <div className={styles.header}>
-                    <img
-                        src={`https://api.dicebear.com/7.x/identicon/svg?seed=${comment.author?.username || 'default'}`}
-                        alt="avatar"
-                        className={styles.avatar}
-                    />
+                    {!comment.author ? (
+                        /* User Deleted Case */
+                        <div
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => alert('User no longer exists')}
+                        >
+                            <div className={styles.avatar} style={{ background: '#333' }} />
+                        </div>
+                    ) : (
+                        /* User Exists (Even if comment is deleted) */
+                        <Link href={`/u/${comment.author.username}`} style={{ textDecoration: 'none' }}>
+                            <img
+                                src={comment.author.image || `https://api.dicebear.com/7.x/identicon/svg?seed=${comment.author.username}`}
+                                alt="avatar"
+                                className={styles.avatar}
+                                style={{ objectFit: 'cover' }}
+                            />
+                        </Link>
+                    )}
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span className={styles.author}>{comment.author?.username || 'deleted'}</span>
+                            {!comment.author ? (
+                                <span
+                                    className={styles.author}
+                                    onClick={() => alert('User no longer exists')}
+                                    style={{ cursor: 'pointer', fontStyle: 'italic', color: 'var(--color-text-dim)' }}
+                                >
+                                    [deleted]
+                                </span>
+                            ) : (
+                                <Link href={`/u/${comment.author.username}`} className={styles.author}>
+                                    {comment.author.username}
+                                </Link>
+                            )}
                             <span className={styles.meta}>• {new Date(comment.createdAt).toLocaleDateString()}</span>
                         </div>
                     </div>
@@ -112,42 +151,73 @@ function CommentItem({ comment, depth = 0, onReply, session, isModalOpen, setIsM
 
                 {/* Content */}
                 <div className={styles.body}>
-                    {comment.content}
+                    {isDeleted ? (
+                        <span style={{ color: 'var(--color-text-dim)', fontStyle: 'italic' }}>[deleted]</span>
+                    ) : isEditing ? (
+                        <form onSubmit={handleEditSubmit} style={{ marginTop: '8px' }}>
+                            <textarea
+                                className="input-field"
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                rows={3}
+                                style={{ width: '100%', marginBottom: '8px', background: 'var(--color-input)', color: 'var(--color-text-main)', border: '1px solid var(--color-border)' }}
+                            />
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button type="button" onClick={() => setIsEditing(false)} className="btn" style={{ background: 'transparent', color: 'var(--color-text-dim)' }}>Cancel</button>
+                                <button type="submit" className="btn btn-primary" style={{ padding: '4px 12px', fontSize: '12px' }}>Save</button>
+                            </div>
+                        </form>
+                    ) : (
+                        comment.content
+                    )}
                 </div>
 
                 {/* Actions */}
-                <div className={styles.actions}>
-                    <div className={styles.voteGroup}>
-                        <button
-                            className={styles.actionBtn}
-                            onClick={() => handleVote('up')}
-                            style={{ color: userVote === 'up' ? '#FF4500' : 'inherit' }}
-                        >
-                            <FaArrowUp />
-                        </button>
-                        <span style={{
-                            color: userVote === 'up' ? '#FF4500' : userVote === 'down' ? '#7193FF' : 'inherit',
-                            fontWeight: 'bold'
-                        }}>
-                            {score}
-                        </span>
-                        <button
-                            className={styles.actionBtn}
-                            onClick={() => handleVote('down')}
-                            style={{ color: userVote === 'down' ? '#7193FF' : 'inherit' }}
-                        >
-                            <FaArrowDown />
-                        </button>
-                    </div>
+                {!isDeleted && (
+                    <div className={styles.actions}>
+                        <div className={styles.voteGroup}>
+                            <button
+                                className={styles.actionBtn}
+                                onClick={() => handleVote('up')}
+                                style={{ color: userVote === 'up' ? '#FF4500' : 'inherit' }}
+                            >
+                                <FaArrowUp />
+                            </button>
+                            <span style={{
+                                color: userVote === 'up' ? '#FF4500' : userVote === 'down' ? '#7193FF' : 'inherit',
+                                fontWeight: 'bold'
+                            }}>
+                                {score}
+                            </span>
+                            <button
+                                className={styles.actionBtn}
+                                onClick={() => handleVote('down')}
+                                style={{ color: userVote === 'down' ? '#7193FF' : 'inherit' }}
+                            >
+                                <FaArrowDown />
+                            </button>
+                        </div>
 
-                    <button className={styles.actionBtn} onClick={handleReplyClick}>
-                        <FaCommentAlt /> Reply
-                    </button>
-                </div>
+                        <button className={styles.actionBtn} onClick={handleReplyClick}>
+                            <FaCommentAlt /> Reply
+                        </button>
+
+                        {isAuthor && (
+                            <>
+                                <button className={styles.actionBtn} onClick={() => setIsEditing(true)}>Edit</button>
+                                <button className={styles.actionBtn} onClick={() => {
+                                    if (confirm('Are you sure you want to delete this comment?')) {
+                                        onDelete(comment._id);
+                                    }
+                                }}>Delete</button>
+                            </>
+                        )}
+                    </div>
+                )}
 
 
                 {/* Reply Form */}
-                {isReplying && (
+                {isReplying && !isDeleted && (
                     <div style={{ paddingLeft: '38px', marginTop: '10px' }}>
                         <CommentForm
                             onSubmit={(text) => {
@@ -171,6 +241,8 @@ function CommentItem({ comment, depth = 0, onReply, session, isModalOpen, setIsM
                             comment={child}
                             depth={depth + 1}
                             onReply={onReply}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
                             session={session}
                             isModalOpen={isModalOpen}
                             setIsModalOpen={setIsModalOpen}
@@ -293,17 +365,14 @@ export default function CommentsSection({ postId, initialComments }) {
 
             if (res.ok) {
                 const data = await res.json();
-                if (data.deletedIds) {
-                    // Cascade delete update: remove all deleted IDs from local state
-                    setComments(prev => prev.filter(c => !data.deletedIds.includes(c._id)));
-                } else if (data.soft) {
+                if (data.soft) {
                     // Soft delete update
                     setComments(prev => prev.map(c =>
-                        c._id === commentId ? { ...c, content: '[deleted]', author: null } : c
+                        c._id === commentId ? { ...c, isDeleted: true, content: '[deleted]' } : c
                     ));
-                } else {
-                    // Hard delete fallback
-                    setComments(prev => prev.filter(c => c._id !== commentId));
+                } else if (data.deletedIds) {
+                    // Hard delete update
+                    setComments(prev => prev.filter(c => !data.deletedIds.includes(c._id)));
                 }
             }
         } catch (error) {

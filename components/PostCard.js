@@ -11,7 +11,8 @@ import { useRouter } from 'next/navigation';
 
 import { useVote } from '@/context/VoteContext';
 
-export default function PostCard({ post, communityName, enableAI = false }) {
+export default function PostCard({ post, communityName, communityIcon, enableAI = false }) {
+
     const { data: session } = useSession();
     const router = useRouter();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -249,6 +250,7 @@ export default function PostCard({ post, communityName, enableAI = false }) {
     // Editing Logic
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content);
+    const [expanded, setExpanded] = useState(false);
 
     const handleEditSave = async () => {
         try {
@@ -283,19 +285,50 @@ export default function PostCard({ post, communityName, enableAI = false }) {
             <div className={styles.content}>
                 {/* Header */}
                 <div className={styles.header} style={{ position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1 }} suppressHydrationWarning>
                         {communityName && (
-                            <Link href={`/r/${communityName}`} className={styles.subreddit}>
-                                <img
-                                    src={`https://api.dicebear.com/7.x/identicon/svg?seed=${communityName}`}
-                                    alt="icon"
-                                    style={{ width: 20, height: 20, borderRadius: '50%' }}
-                                />
+                            <Link href={`/r/${communityName}`} className={styles.subreddit} onClick={(e) => e.stopPropagation()}>
+                                {(communityIcon || post.community?.icon) ? (
+                                    <img
+                                        src={communityIcon || post.community?.icon}
+                                        alt="icon"
+                                        style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }}
+                                    />
+                                ) : (
+                                    <img
+                                        src="/default-subreddit.png"
+                                        alt="icon"
+                                        style={{ width: 20, height: 20, borderRadius: '50%' }}
+                                    />
+                                )}
                                 r/{communityName}
                             </Link>
                         )}
-                        <span className={styles.meta}>
-                            • Posted by u/{post.author?.username || 'deleted'} • {new Date(post.createdAt).toLocaleDateString()}
+                        <span className={styles.meta} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            • Posted by
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                {post.author ? (
+                                    <Link href={`/u/${post.author.username}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', color: 'inherit' }} onClick={(e) => e.stopPropagation()}>
+                                        {post.author.image ? (
+                                            <img
+                                                src={post.author.image}
+                                                alt={post.author.username}
+                                                style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }}
+                                                suppressHydrationWarning
+                                            />
+                                        ) : (
+                                            <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#333' }} />
+                                        )}
+                                        <span className={styles.usernameHover}>u/{post.author.username}</span>
+                                    </Link>
+                                ) : (
+                                    <>
+                                        <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#333' }} />
+                                        <span>u/deleted</span>
+                                    </>
+                                )}
+                            </div>
+                            • {new Date(post.createdAt).toLocaleDateString()}
                         </span>
                     </div>
 
@@ -398,7 +431,10 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                 ) : null}
 
                 {/* Body Text */}
-                <div className={styles.body}>
+                <div
+                    className={styles.body}
+                    style={(enableAI || expanded) ? { WebkitLineClamp: 'unset', display: 'block', overflow: 'visible' } : {}}
+                >
                     {isEditing ? (
                         <div style={{ marginTop: '8px' }}>
                             <textarea
@@ -414,9 +450,33 @@ export default function PostCard({ post, communityName, enableAI = false }) {
                             </div>
                         </div>
                     ) : (
-                        post.content.length > 200 && !enableAI ? post.content.substring(0, 200) + '...' : post.content
+                        (enableAI || expanded) ? post.content : (post.content.length > 300 ? post.content.substring(0, 300) + '...' : post.content)
                     )}
                 </div>
+
+                {/* See More Button */}
+                {!isEditing && !enableAI && !expanded && post.content.length > 300 && (
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setExpanded(true);
+                        }}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--color-text-dim)',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            padding: '0',
+                            marginBottom: '12px',
+                            marginTop: '-8px'
+                        }}
+                    >
+                        See More
+                    </button>
+                )}
 
                 {enableAI && !isEditing && <AISummary content={post.content} title={post.title} />}
 

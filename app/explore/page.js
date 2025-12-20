@@ -22,9 +22,11 @@ export default async function ExplorePage() {
                         <Link key={community._id} href={`/r/${community.name}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                             <div className="card" style={{ height: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#FF4500', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
-                                        r/
-                                    </div>
+                                    {community.icon ? (
+                                        <img src={community.icon} alt={community.name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <img src="/default-subreddit.png" alt={community.name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
+                                    )}
                                     <h2 style={{ fontSize: '18px', margin: 0 }}>r/{community.name}</h2>
                                 </div>
                                 <p style={{ fontSize: '14px', color: '#878A8C', flex: 1 }}>{community.description || 'No description'}</p>

@@ -195,3 +195,12 @@
     display: inline-block;
     margin-bottom: 8px;
 }
+
+.usernameHover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.usernameHover:hover {
+    text-decoration: underline;
+}

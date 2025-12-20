@@ -108,7 +108,6 @@ export default function SubmitPage() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.pageTitle}>Create a post</h1>
-        <h1 className={styles.pageTitle}>Create a post</h1>
       </div>
 
       <div className={styles.contentWrapper}>
@@ -123,7 +122,7 @@ export default function SubmitPage() {
                   {selectedCommunity.icon ? (
                     <img src={selectedCommunity.icon} className={styles.circleImage} alt="" />
                   ) : (
-                    <div className={styles.circleImage} style={{ background: selectedCommunity.themeColor || '#0079D3' }} />
+                    <img src="/default-subreddit.png" className={styles.circleImage} alt="" />
                   )}
                   <span style={{ fontWeight: '500' }}>r/{selectedCommunity.name}</span>
                 </div>
@@ -149,7 +148,7 @@ export default function SubmitPage() {
                     {comm.icon ? (
                       <img src={comm.icon} className={styles.circleImage} alt="" />
                     ) : (
-                      <div className={styles.circleImage} style={{ background: comm.themeColor || '#0079D3' }} />
+                      <img src="/default-subreddit.png" className={styles.circleImage} alt="" />
                     )}
                     <span style={{ fontWeight: '500' }}>r/{comm.name}</span>
                     <span style={{ fontSize: '12px', color: '#878A8C', marginLeft: 'auto' }}>{comm.members?.length || 0} members</span>
@@ -261,12 +260,7 @@ export default function SubmitPage() {
                 </div>
               )}
 
-              <div className={`${styles.toolbar} ${styles.darkToolbar}`}>
-                {/* Just visual placeholders for rich text toolbar */}
-                <span style={{ fontWeight: 'bold', padding: '0 8px', cursor: 'pointer' }}>B</span>
-                <span style={{ fontStyle: 'italic', padding: '0 8px', cursor: 'pointer' }}>i</span>
-                <span style={{ textDecoration: 'underline', padding: '0 8px', cursor: 'pointer' }}>u</span>
-              </div>
+
 
               <textarea
                 placeholder="Body text (optional)"

@@ -58,39 +58,7 @@ export default function CommunitySidebar({ community }) {
 
             </div>
 
-            {/* Bookmarks Section (Mock) */}
-            <div className={styles.padding} style={{ borderTop: '1px solid var(--color-border)' }}>
-                <h3 className={styles.sectionTitle}>
-                    Community Bookmarks
-                </h3>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <button className="btn" style={{ backgroundColor: '#272729', borderRadius: '20px', fontSize: '12px', padding: '8px 16px', fontWeight: '600' }}>
-                        Discord server
-                    </button>
-                </div>
-            </div>
 
-            {/* Rules Section (Mock or real if added to model) */}
-            <div className={styles.padding} style={{ borderTop: '1px solid var(--color-border)' }}>
-                <h3 className={styles.sectionTitle}>
-                    r/{community.name} Rules
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {community.rules && community.rules.length > 0 ? community.rules.map((rule, idx) => (
-                        <div key={idx} style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border)', fontSize: '14px', fontWeight: '500' }}>
-                            {idx + 1}. {rule.title}
-                        </div>
-                    )) : (
-                        <div style={{ fontSize: '14px', color: 'var(--color-text-dim)' }}>
-                            1. No dooxing
-                            <br />
-                            2. No brigading or inciting harassment
-                            <br />
-                            3. Be civil
-                        </div>
-                    )}
-                </div>
-            </div>
         </div>
     );
 }

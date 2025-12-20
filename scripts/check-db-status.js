@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
-const Community = require('../models/Community');
+// Inline schema to avoid ESM import issues with models/Community.js
+const CommunitySchema = new mongoose.Schema({ name: String }, { strict: false });
+const Community = mongoose.models.Community || mongoose.model('Community', CommunitySchema);
 
 // Hardcoded from known .env.local value for verification
-const MONGODB_URI = 'mongodb://127.0.0.1:27017/reddit_clone_2';
+const MONGODB_URI = 'mongodb+srv://mawada:3AcloApEh4AvLP6B@cluster0.kfgxowi.mongodb.net/reddit_clone?retryWrites=true&w=majority&appName=Cluster0';
 
 async function checkDB() {
     try {

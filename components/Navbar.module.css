@@ -91,26 +91,30 @@
     background: var(--color-surface);
     border-color: var(--color-text-main);
     outline: none;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+}
+
+.searchInputOpen {
+    /* Kept for potential future use or z-index, but resetting shape changes */
+    border-radius: 99px;
+    border-bottom: 1px solid var(--color-text-main);
+    /* Restore standard border if needed, or rely on focus */
 }
 
 .searchDropdown {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 4px);
     left: 0;
     right: 0;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-top: none;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
+    border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     max-height: 400px;
     overflow-y: auto;
     padding-bottom: 8px;
 }
+
 
 .searchSection {
     padding: 8px 0;

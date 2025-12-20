@@ -137,7 +137,7 @@ export default function Navbar() {
                         suppressHydrationWarning
                         type="text"
                         placeholder="Search Reddit"
-                        className={styles.searchInput}
+                        className={`${styles.searchInput} ${isSearchDropdownOpen && (searchResults.users.length > 0 || searchResults.communities.length > 0) ? styles.searchInputOpen : ''}`}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onFocus={() => {
@@ -174,7 +174,19 @@ export default function Navbar() {
                                         onClick={() => setIsSearchDropdownOpen(false)}
                                     >
                                         <div className={styles.resultIcon}>
-                                            <FaReddit />
+                                            {community.icon ? (
+                                                <img
+                                                    src={community.icon}
+                                                    alt=""
+                                                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                                                />
+                                            ) : (
+                                                <img
+                                                    src="/default-subreddit.png"
+                                                    alt=""
+                                                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                                                />
+                                            )}
                                         </div>
                                         <div className={styles.resultInfo}>
                                             <span className={styles.resultName}>r/{community.name}</span>

@@ -27,7 +27,7 @@ export async function POST(req, { params }) {
         });
 
         // Populate author for immediate return
-        await newComment.populate('author', 'username');
+        await newComment.populate('author', 'username image');
 
         // 2. Notification Logic
         // We need to fetch the post to know the author
@@ -79,7 +79,7 @@ export async function GET(req, { params }) {
         const { postId } = await params;
 
         const comments = await Comment.find({ post: postId })
-            .populate('author', 'username')
+            .populate('author', 'username image')
             .sort({ createdAt: -1 });
 
         return NextResponse.json(comments, { status: 200 });

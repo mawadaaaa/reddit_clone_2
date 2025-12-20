@@ -20,7 +20,7 @@ export default function RecentPosts({ posts }) {
           if (!post) return null;
 
           return (
-            <li key={post._id || idx} className={styles.item}>
+            <li key={`${post._id}-${idx}`} className={styles.item}>
 
               <div className={styles.info}>
                 <div className={styles.metaRow}>

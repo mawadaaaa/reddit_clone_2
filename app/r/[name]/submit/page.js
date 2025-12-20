@@ -154,11 +154,7 @@ export default function SubmitPage({ params }) {
 
                             {activeTab === 'post' && (
                                 <>
-                                    <div className={`${styles.toolbar} ${styles.darkToolbar}`}>
-                                        <span style={{ fontWeight: 'bold', padding: '0 8px', cursor: 'pointer' }}>B</span>
-                                        <span style={{ fontStyle: 'italic', padding: '0 8px', cursor: 'pointer' }}>i</span>
-                                        <span style={{ textDecoration: 'underline', padding: '0 8px', cursor: 'pointer' }}>u</span>
-                                    </div>
+
                                     <textarea
                                         placeholder="Body text (optional)"
                                         className={styles.textarea}

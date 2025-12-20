@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+export const dynamic = 'force-dynamic'; // Ensure fresh data fetch for members list
 import dbConnect from '@/lib/db';
 import Community from '@/models/Community';
 import CommunityHeader from '@/components/CommunityHeader';
@@ -23,7 +24,7 @@ import Comment from '@/models/Comment'; // Add import
 async function getPosts(communityId) {
     await dbConnect();
     const posts = await Post.find({ community: communityId })
-        .populate('author', 'username')
+        .populate('author', 'username image')
         .sort({ createdAt: -1 })
         .lean();
 
@@ -56,7 +57,7 @@ export default async function CommunityPage({ params }) {
                         <div className="card">No posts yet. Be the first to post!</div>
                     ) : (
                         posts.map(post => (
-                            <PostCard key={post._id} post={post} communityName={community.name} />
+                            <PostCard key={post._id} post={post} communityName={community.name} communityIcon={community.icon} />
                         ))
                     )}
                 </div>

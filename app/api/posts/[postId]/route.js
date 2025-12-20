@@ -23,13 +23,15 @@ export async function PUT(req, { params }) {
     }
 
     // Version ownership
-    if (post.author.username !== session.user.name) {
-      // extra check for robustness
-      if (session.user.id && post.author._id.toString() !== session.user.id) {
-        return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-      } else if (!session.user.id && post.author.username !== session.user.name) {
-        return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-      }
+    // Version ownership
+    if (!post.author) {
+      return NextResponse.json({ message: 'Post author not found' }, { status: 403 });
+    }
+    const isAuthor = session.user.id && post.author._id.toString() === session.user.id;
+    const isAuthorByName = !session.user.id && post.author.username === session.user.name;
+
+    if (!isAuthor && !isAuthorByName) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
     post.content = content;
@@ -59,19 +61,20 @@ export async function DELETE(req, { params }) {
     }
 
     // Verify ownership
-    // Using loose comparison or username check as previously established, or ID if cleaner.
-    // Assuming session.user.name matches author.username
-    if (post.author.username !== session.user.name) {
-      // double check if IDs match for robustness?
-      // Let's stick to the existing check but might want to be safer if usernames change?
-      // Actually, session.user.id is usually safer.
-      // Let's try to see if we can use ID.
-      if (session.user.id && post.author._id.toString() !== session.user.id) {
-        return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-      } else if (!session.user.id && post.author.username !== session.user.name) {
-        // Fallback
-        return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-      }
+    // Robust check: Ensure author exists and IDs match
+    if (!post.author) {
+      // If author is missing (deleted user?), only Admin could delete, or fail. 
+      // For now, fail safe or assuming only author can delete.
+      // Actually if author is gone, maybe allow cleaning up? But safer to forbid unless admin.
+      return NextResponse.json({ message: 'Post author not found' }, { status: 403 });
+    }
+
+    const isAuthor = session.user.id && post.author._id.toString() === session.user.id;
+    // Fallback for older sessions without ID (unlikely but safe)
+    const isAuthorByName = !session.user.id && post.author.username === session.user.name;
+
+    if (!isAuthor && !isAuthorByName) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
     // 1. Delete all comments
