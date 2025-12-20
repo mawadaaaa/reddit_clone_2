@@ -54,21 +54,7 @@ export default function SubmitPage() {
     }
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setError('File too large (max 5MB)');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result);
-        setError('');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -198,17 +184,6 @@ export default function SubmitPage() {
                 <div style={{ border: '1px dashed #343536', padding: '20px', borderRadius: '4px', textAlign: 'center', marginTop: '16px' }}>
                   {!image && !video ? (
                     <div>
-                      <p style={{ marginBottom: '16px' }}>Drag and drop images or</p>
-                      <label className="btn btn-outline" style={{ cursor: 'pointer', display: 'inline-block', marginBottom: '10px', color: 'var(--color-text-main)', borderColor: 'var(--color-text-main)' }}>
-                        Upload
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          style={{ display: 'none' }}
-                        />
-                      </label>
-                      <p style={{ margin: '10px 0', fontWeight: 'bold', color: 'var(--color-text-dim)' }}>OR</p>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <input
                           type="url"

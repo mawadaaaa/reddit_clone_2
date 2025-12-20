@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import dbConnect from '@/lib/db';
 import Post from '@/models/Post';
+import Notification from '@/models/Notification';
 import { authOptions } from '../../../auth/[...nextauth]/route';
 
 export async function POST(req, { params }) {
@@ -47,6 +48,37 @@ export async function POST(req, { params }) {
                     $pull: { upvotes: userId }
                 });
             }
+        }
+
+        // Notification Logic
+        try {
+            // Only notify if loading a NEW vote (not untoggling)
+            // Determining if it was a new vote or just a toggle is tricky with the current logic structure
+            // But if we are here, we likely performed an action.
+            // Let's check the type and current state again or just rely on the fact that if it wasn't already upvoted/downvoted, it's a new action.
+
+            // Re-eval based on initial state 'isUpvoted' / 'isDownvoted'
+            let shouldNotify = false;
+            let notifType = null;
+
+            if (type === 'up' && !isUpvoted) {
+                shouldNotify = true;
+                notifType = 'post_upvote';
+            } else if (type === 'down' && !isDownvoted) {
+                shouldNotify = true;
+                notifType = 'post_downvote';
+            }
+
+            if (shouldNotify && post.author.toString() !== userId) {
+                await Notification.create({
+                    recipient: post.author,
+                    sender: userId,
+                    type: notifType,
+                    post: postId,
+                });
+            }
+        } catch (notifError) {
+            console.error('Notification failed', notifError);
         }
 
         // Fetch updated post

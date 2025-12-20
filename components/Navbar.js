@@ -28,6 +28,8 @@ export default function Navbar() {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
+    const [userImage, setUserImage] = useState(session?.user?.image || null);
+
     const fetchNotifications = async () => {
         if (session?.user) {
             try {
@@ -37,6 +39,16 @@ export default function Navbar() {
                     setNotifications(data.notifications);
                     setUnreadCount(data.unreadCount);
                 }
+
+                // Also fetch user profile to get the image (because base64 images are stripped from session)
+                const userRes = await fetch(`/api/u/${session.user.username}`); // Or session.user.name? NextAuth maps name->username in session callback
+                if (userRes.ok) {
+                    const userData = await userRes.json();
+                    if (userData.image) {
+                        setUserImage(userData.image);
+                    }
+                }
+
             } catch (e) {
                 console.error(e);
             }
@@ -51,6 +63,12 @@ export default function Navbar() {
             setNotifications(prev => prev.map(n => ({ ...n, read: true })));
         } catch (e) { console.error(e); }
     };
+
+    useEffect(() => {
+        if (session?.user?.image && !session.user.image.startsWith('data:')) {
+            setUserImage(session.user.image);
+        }
+    }, [session]);
 
     useEffect(() => {
         fetchNotifications();
@@ -309,7 +327,7 @@ export default function Navbar() {
                                             >
                                                 <div style={{ flexShrink: 0 }}>
                                                     <img
-                                                        src={notif.sender?.image || `https://api.dicebear.com/7.x/identicon/svg?seed=${notif.sender?.username}`}
+                                                        src={notif.sender?.image || '/default-subreddit.png'}
                                                         alt="avatar"
                                                         style={{ width: 32, height: 32, borderRadius: '50%' }}
                                                     />
@@ -318,7 +336,17 @@ export default function Navbar() {
                                                     <span style={{ fontWeight: 'bold' }}>u/{notif.sender?.username}</span>
                                                     {' '}
                                                     <span style={{ color: 'var(--color-text-dim)' }}>
-                                                        {notif.type === 'post_reply' ? 'commented on your post' : 'replied to your comment'}
+                                                        {(() => {
+                                                            switch (notif.type) {
+                                                                case 'post_reply': return 'commented on your post';
+                                                                case 'comment_reply': return 'replied to your comment';
+                                                                case 'post_upvote': return 'upvoted your post';
+                                                                case 'post_downvote': return 'downvoted your post';
+                                                                case 'comment_upvote': return 'upvoted your comment';
+                                                                case 'comment_downvote': return 'downvoted your comment';
+                                                                default: return 'notification';
+                                                            }
+                                                        })()}
                                                     </span>
                                                     {' '}
                                                     <span style={{ color: 'var(--color-text-main)' }}>
@@ -341,7 +369,7 @@ export default function Navbar() {
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             >
                                 <img
-                                    src={session.user.image || `https://api.dicebear.com/7.x/identicon/svg?seed=${session.user.username}`}
+                                    src={userImage || '/default-subreddit.png'}
                                     alt="avatar"
                                     style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
                                 />

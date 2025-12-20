@@ -4,9 +4,10 @@ import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import Post from '@/models/Post';
 import Comment from '@/models/Comment';
-import Community from '@/models/Community'; // Import Community explicitly
+import Community from '@/models/Community';
 import PostCard from '@/components/PostCard';
 import ProfileManager from '@/components/ProfileManager';
+import CreatePostBar from '@/components/CreatePostBar'; // Import shared component
 
 async function getUser(username) {
     await dbConnect();
@@ -186,9 +187,7 @@ export default async function ProfilePage({ params, searchParams }) {
         posts = await getUserUpvoted(user._id);
     } else if (currentView === 'downvoted') {
         posts = await getUserDownvoted(user._id);
-    } else if (currentView === 'history') {
-        // Placeholder for history
-        posts = [];
+
     }
 
     // Helper to generic active style
@@ -238,7 +237,7 @@ export default async function ProfilePage({ params, searchParams }) {
                             marginRight: '16px'
                         }}>
                             <img
-                                src={user.image || `https://api.dicebear.com/7.x/identicon/svg?seed=${user.username}`}
+                                src={user.image || '/default-subreddit.png'}
                                 alt="avatar"
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             />
@@ -257,7 +256,7 @@ export default async function ProfilePage({ params, searchParams }) {
                         {isOwner && (
                             <>
                                 <Link href={`/u/${username}?view=saved`} style={getTabStyle('saved')}>Saved</Link>
-                                <Link href={`/u/${username}?view=history`} style={getTabStyle('history')}>History</Link>
+
                                 <Link href={`/u/${username}?view=hidden`} style={getTabStyle('hidden')}>Hidden</Link>
                                 <Link href={`/u/${username}?view=upvoted`} style={getTabStyle('upvoted')}>Upvoted</Link>
                                 <Link href={`/u/${username}?view=downvoted`} style={getTabStyle('downvoted')}>Downvoted</Link>
@@ -268,43 +267,7 @@ export default async function ProfilePage({ params, searchParams }) {
 
                     {/* Create Post Input Bar */}
                     {(currentView === 'overview' || currentView === 'posts') && isOwner && (
-                        <div className="card" style={{ display: 'flex', alignItems: 'center', padding: '8px', marginBottom: '16px' }}>
-                            <div style={{
-                                width: '38px',
-                                height: '38px',
-                                borderRadius: '50%',
-                                overflow: 'hidden',
-                                marginRight: '8px',
-                                background: '#ccc'
-                            }}>
-                                <img
-                                    src={`https://api.dicebear.com/7.x/identicon/svg?seed=${user.username}`}
-                                    alt="avatar"
-                                    style={{ width: '100%', height: '100%' }}
-                                />
-                            </div>
-                            <Link href="/r/popular/submit" style={{ flexGrow: 1 }}>
-                                <input
-                                    type="text"
-                                    placeholder="Create Post"
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px',
-                                        borderRadius: '4px',
-                                        border: '1px solid var(--color-border)',
-                                        background: 'var(--color-input)',
-                                        cursor: 'pointer'
-                                    }}
-                                    readOnly
-                                />
-                            </Link>
-                            <Link href="/r/popular/submit" style={{ marginLeft: '8px', color: 'var(--color-text-dim)', fontSize: '20px' }}>
-                                📷
-                            </Link>
-                            <Link href="/r/popular/submit" style={{ marginLeft: '8px', color: 'var(--color-text-dim)', fontSize: '20px' }}>
-                                🔗
-                            </Link>
-                        </div>
+                        <CreatePostBar />
                     )}
 
                     {currentView === 'manage' && isOwner ? (
@@ -392,7 +355,7 @@ export default async function ProfilePage({ params, searchParams }) {
                                 justifyContent: 'center'
                             }}>
                                 <img
-                                    src={user.image || `https://api.dicebear.com/7.x/identicon/svg?seed=${user.username}`}
+                                    src={user.image || '/default-subreddit.png'}
                                     alt="avatar"
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />

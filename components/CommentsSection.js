@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import styles from './CommentsSection.module.css';
@@ -23,6 +23,17 @@ function CommentItem({ comment, depth = 0, onReply, onEdit, onDelete, session, i
         if (comment.downvotes?.includes(session.user.id)) return 'down';
         return null;
     });
+
+    useEffect(() => {
+        if (session && comment) {
+            if (comment.upvotes?.includes(session.user.id)) setUserVote('up');
+            else if (comment.downvotes?.includes(session.user.id)) setUserVote('down');
+            else setUserVote(null);
+        }
+    }, [session, comment]);
+
+
+
 
     const isAuthor = session?.user?.id === comment.author?._id;
     const isDeleted = comment.isDeleted;
@@ -116,7 +127,7 @@ function CommentItem({ comment, depth = 0, onReply, onEdit, onDelete, session, i
                         /* User Exists (Even if comment is deleted) */
                         <Link href={`/u/${comment.author.username}`} style={{ textDecoration: 'none' }}>
                             <img
-                                src={comment.author.image || `https://api.dicebear.com/7.x/identicon/svg?seed=${comment.author.username}`}
+                                src={comment.author.image || '/default-subreddit.png'}
                                 alt="avatar"
                                 className={styles.avatar}
                                 style={{ objectFit: 'cover' }}

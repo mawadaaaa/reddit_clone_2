@@ -18,7 +18,7 @@ export default function ExploreCard({ community }) {
             <div className={styles.card}>
                 <div className={styles.header}>
                     <img
-                        src={community.icon || `https://api.dicebear.com/7.x/identicon/svg?seed=${community.name}`}
+                        src={community.icon || '/default-subreddit.png'}
                         alt=""
                         className={styles.icon}
                     />

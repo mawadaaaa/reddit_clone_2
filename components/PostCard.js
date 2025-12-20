@@ -317,13 +317,21 @@ export default function PostCard({ post, communityName, communityIcon, enableAI 
                                                 suppressHydrationWarning
                                             />
                                         ) : (
-                                            <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#333' }} />
+                                            <img
+                                                src="/default-subreddit.png"
+                                                alt="default avatar"
+                                                style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }}
+                                            />
                                         )}
                                         <span className={styles.usernameHover}>u/{post.author.username}</span>
                                     </Link>
                                 ) : (
                                     <>
-                                        <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#333' }} />
+                                        <img
+                                            src="/default-subreddit.png"
+                                            alt="default avatar"
+                                            style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }}
+                                        />
                                         <span>u/deleted</span>
                                     </>
                                 )}
@@ -386,10 +394,36 @@ export default function PostCard({ post, communityName, communityIcon, enableAI 
                 {/* Media Rendering */}
                 {post.video ? (
                     <div className={styles.mediaContainer}>
-                        <video controls className={styles.mediaVideo} suppressHydrationWarning>
-                            <source src={post.video} type="video/mp4" suppressHydrationWarning />
-                            Your browser does not support the video tag.
-                        </video>
+                        {(() => {
+                            const getYouTubeId = (url) => {
+                                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+                                const match = url.match(regExp);
+                                return (match && match[2].length === 11) ? match[2] : null;
+                            };
+                            const youtubeId = getYouTubeId(post.video);
+
+                            if (youtubeId) {
+                                return (
+                                    <iframe
+                                        width="100%"
+                                        height="400"
+                                        src={`https://www.youtube.com/embed/${youtubeId}`}
+                                        title={post.title}
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                        style={{ borderRadius: '4px' }}
+                                    ></iframe>
+                                );
+                            } else {
+                                return (
+                                    <video controls className={styles.mediaVideo} suppressHydrationWarning>
+                                        <source src={post.video} type="video/mp4" suppressHydrationWarning />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                );
+                            }
+                        })()}
                     </div>
                 ) : post.image ? (
                     <div className={styles.mediaContainer}>

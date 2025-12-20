@@ -46,14 +46,27 @@ export const authOptions = {
             if (user) {
                 token.id = user.id;
                 token.username = user.name;
-                token.image = user.image;
+
+                // Do NOT store base64 images in the token/cookie (too large, causes 431 error)
+                if (user.image && user.image.startsWith('data:')) {
+                    token.image = null; // Client side will fetch it
+                } else {
+                    token.image = user.image;
+                }
             }
             // Allow updating the token if session update is triggered
             if (trigger === "update") {
                 console.log('JWT UPDATE TRIGGERED'); // DEBUG
                 console.log('Session Update Data:', session); // DEBUG
                 if (session?.username) token.username = session.username;
-                if (session?.image) token.image = session.image;
+
+                if (session?.image) {
+                    if (session.image.startsWith('data:')) {
+                        token.image = null;
+                    } else {
+                        token.image = session.image;
+                    }
+                }
             }
             return token;
         },
