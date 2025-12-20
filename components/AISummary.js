@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaRobot } from 'react-icons/fa';
 
 export default function AISummary({ content, title }) {
@@ -24,25 +24,24 @@ export default function AISummary({ content, title }) {
         }
     };
 
+    useEffect(() => {
+        handleSummarize();
+    }, []);
+
     const hasContent = content && content.trim().length > 0;
 
     return (
         <div style={{ padding: '0 8px 8px 8px' }}>
-            {!summary && (
-                <button
-                    onClick={handleSummarize}
-                    disabled={loading || !hasContent}
-                    className="btn btn-outline"
-                    style={{
-                        fontSize: '12px',
-                        padding: '4px 8px',
-                        opacity: !hasContent ? 0.5 : 1,
-                        cursor: !hasContent ? 'not-allowed' : 'pointer'
-                    }}
-                    title={!hasContent ? "No text content to summarize" : ""}
-                >
-                    <FaRobot /> {loading ? 'Summarizing...' : 'Summarize with AI'}
-                </button>
+            {loading && (
+                <div style={{ fontSize: '12px', color: 'var(--color-text-dim)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FaRobot className="spin" /> Summarizing...
+                </div>
+            )}
+
+            {!loading && !summary && (
+                <div style={{ fontSize: '12px', color: 'var(--color-text-dim)' }}>
+                    Unable to generate summary.
+                </div>
             )}
 
             {summary && (

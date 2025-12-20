@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FaArrowUp, FaArrowDown, FaCommentAlt, FaEllipsisH, FaEdit, FaBookmark, FaEyeSlash, FaTrash, FaLink, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaArrowUp, FaArrowDown, FaCommentAlt, FaEllipsisH, FaEdit, FaBookmark, FaEyeSlash, FaTrash, FaLink, FaExternalLinkAlt, FaRobot } from 'react-icons/fa';
 import AISummary from './AISummary';
 import styles from './PostCard.module.css';
 import AuthModal from './AuthModal';
@@ -250,7 +250,9 @@ export default function PostCard({ post, communityName, communityIcon, enableAI 
     // Editing Logic
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content);
+
     const [expanded, setExpanded] = useState(false);
+    const [showSummary, setShowSummary] = useState(enableAI);
 
     const handleEditSave = async () => {
         try {
@@ -512,7 +514,7 @@ export default function PostCard({ post, communityName, communityIcon, enableAI 
                     </button>
                 )}
 
-                {enableAI && !isEditing && <AISummary content={post.content} title={post.title} />}
+                {showSummary && !isEditing && <AISummary content={post.content} title={post.title} />}
 
                 {/* Footer Actions (Vote Pill + Comment Pill + Share Pill) */}
                 <div className={styles.footer}>
@@ -565,6 +567,18 @@ export default function PostCard({ post, communityName, communityIcon, enableAI 
                             </svg>
                         )}
                         <span>{isSaved ? 'Unsave' : 'Save'}</span>
+                    </button>
+
+                    {/* Summarize Pill */}
+                    <button
+                        className={`${styles.pill} ${styles.actionPill}`}
+                        suppressHydrationWarning
+                        onClick={(e) => { e.preventDefault(); setShowSummary(!showSummary); }}
+                        title="Summarize with AI"
+                        style={{ color: showSummary ? 'var(--color-primary)' : 'inherit' }}
+                    >
+                        <FaRobot className={styles.actionIcon} />
+                        <span>{showSummary ? 'Close Summary' : 'Summarize'}</span>
                     </button>
                 </div>
             </div>
